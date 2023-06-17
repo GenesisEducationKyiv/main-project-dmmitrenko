@@ -1,20 +1,18 @@
-FROM golang:1.20-alpine AS builder
-
+FROM golang:1.20 as builder
 WORKDIR /app
-
-COPY go.mod go.sum ./
-RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o api .
+RUN go get ./... && go mod download
+RUN GOOS=linux CGO_ENABLED=0 GOARCH=amd64 go build -ldflags="-w -s" -o main ./cmd/main.go
 
-FROM alpine:latest
+FROM alpine:latest 
 
 WORKDIR /app
 
-COPY --from=builder /app/api .
+COPY --from=builder /app/main .
+COPY .env .
 
 EXPOSE 8080
 
-CMD ["./api"]
+CMD [ "./main" ]

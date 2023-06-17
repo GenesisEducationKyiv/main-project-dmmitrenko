@@ -27,7 +27,7 @@ func SendRateForSubscribedEmails(coin string, currency string) error {
 		return err
 	}
 
-	from := mail.NewEmail(constants.Nickname, constants.EmailSender)
+	from := mail.NewEmail(os.Getenv(constants.Nickname), os.Getenv(constants.EmailSender))
 	htmlContentTemplate := "<p>RATE: %.2f</p>"
 
 	client := sendgrid.NewSendClient(os.Getenv(constants.ApiKey))

@@ -19,7 +19,7 @@ func AppendEmailToFile(email string) error {
 		}
 	}
 
-	file, err := os.OpenFile(constants.FilePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
+	file, err := os.OpenFile(os.Getenv(constants.FilePath), os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
 		return err
 	}
@@ -34,15 +34,15 @@ func AppendEmailToFile(email string) error {
 }
 
 func GetAllEmails() ([]string, error) {
-	if _, err := os.Stat(constants.FilePath); os.IsNotExist(err) {
+	if _, err := os.Stat(os.Getenv(constants.FilePath)); os.IsNotExist(err) {
 		// Create the file if it doesn't exist
-		_, err := os.Create(constants.FilePath)
+		_, err := os.Create(os.Getenv(constants.FilePath))
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	data, err := os.ReadFile(constants.FilePath)
+	data, err := os.ReadFile(os.Getenv(constants.FilePath))
 	if err != nil {
 		return nil, err
 	}

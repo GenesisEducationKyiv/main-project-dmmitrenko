@@ -1,9 +1,9 @@
 package constants
 
 const (
-	FilePath    = "DB.txt"
-	Nickname    = "serhii"
-	EmailSender = "cergoneee@gmail.com"
+	FilePath    = "FILE_PATH"
+	Nickname    = "NICKNAME"
+	EmailSender = "EMAIL_SENDER"
 	ApiKey      = "APIKEY"
 )
 
