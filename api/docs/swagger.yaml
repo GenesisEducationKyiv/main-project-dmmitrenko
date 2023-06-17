@@ -1,0 +1,57 @@
+basePath: /
+info:
+  contact: {}
+  description: API documentation for GSES2 BTC application
+  title: GSES2 BTC application
+  version: "1.0"
+paths:
+  /email:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Subscribe email
+      parameters:
+      - description: Email address
+        in: formData
+        name: email
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+      summary: Subscribe email to receive the current rate
+      tags:
+      - subscription
+  /exchange-rate:
+    get:
+      consumes:
+      - application/json
+      description: Returns the current BTC to UAH exchange rate
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: number
+      summary: Get BTC to UAH exchange rate
+      tags:
+      - rate
+  /subscribe:
+    post:
+      description: Send an emails
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: Internal Server Error
+      summary: Send an email with the current rate to all subscribed emails.
+      tags:
+      - subscription
+swagger: "2.0"
