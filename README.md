@@ -41,5 +41,5 @@ docker build -t <your-image-name> .
 ```
 - Run the container based on the built image.
 ```docker
-docker run -p 8080:8080 --env APIKEY=<API key for sending messages> <your-image-name>
+docker run -p <your port>:8080 --env-file .env --env APIKEY=<API key for sending messages> <your-image-name>
 ```
