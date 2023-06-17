@@ -3,7 +3,7 @@ package services
 import (
 	constants "CurrencyRateApp/domain"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"strconv"
 	"strings"
 )
@@ -33,7 +33,7 @@ func FetchExchangeRate(coins []string, currencies []string, precision uint) (Exc
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return ExchangeRateResponse{}, err
 	}

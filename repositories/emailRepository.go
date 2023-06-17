@@ -3,7 +3,6 @@ package repositories
 import (
 	constants "CurrencyRateApp/domain"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 )
@@ -16,7 +15,7 @@ func AppendEmailToFile(email string) error {
 
 	for _, e := range emails {
 		if e == email {
-			return fmt.Errorf("Email already exists: %s", email)
+			return fmt.Errorf("email already exists: %s", email)
 		}
 	}
 
@@ -43,7 +42,7 @@ func GetAllEmails() ([]string, error) {
 		}
 	}
 
-	data, err := ioutil.ReadFile(constants.FilePath)
+	data, err := os.ReadFile(constants.FilePath)
 	if err != nil {
 		return nil, err
 	}

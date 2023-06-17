@@ -11,5 +11,8 @@ import (
 // @BasePath /
 func main() {
 	router := route.SetupRouter()
-	router.Run(":8080")
+	err := router.Run(":8080")
+	if err != nil {
+		panic(err)
+	}
 }
