@@ -8,6 +8,11 @@ import (
 )
 
 func AppendEmailToFile(email string) error {
+	err := createFileIfNotExists()
+	if err != nil {
+		return err
+	}
+
 	emails, err := GetAllEmails()
 	if err != nil {
 		return err
@@ -34,12 +39,10 @@ func AppendEmailToFile(email string) error {
 }
 
 func GetAllEmails() ([]string, error) {
-	if _, err := os.Stat(os.Getenv(constants.FILE_PATH)); os.IsNotExist(err) {
-		// Create the file if it doesn't exist
-		_, err := os.Create(os.Getenv(constants.FILE_PATH))
-		if err != nil {
-			return nil, err
-		}
+	var err error
+	_, err = os.Stat(os.Getenv(constants.FILE_PATH))
+	if os.IsNotExist(err) {
+		return []string{}, nil
 	}
 
 	data, err := os.ReadFile(os.Getenv(constants.FILE_PATH))
@@ -50,4 +53,14 @@ func GetAllEmails() ([]string, error) {
 	emails := strings.Split(strings.TrimSpace(string(data)), "\n")
 
 	return emails, nil
+}
+
+func createFileIfNotExists() error {
+	if _, err := os.Stat(os.Getenv(constants.FILE_PATH)); os.IsNotExist(err) {
+		_, err := os.Create(os.Getenv(constants.FILE_PATH))
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
