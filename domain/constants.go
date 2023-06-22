@@ -1,21 +1,21 @@
 package constants
 
 const (
-	FilePath    = "FILE_PATH"
-	Nickname    = "NICKNAME"
-	EmailSender = "EMAIL_SENDER"
-	ApiKey      = "APIKEY"
+	FILE_PATH    = "FILE_PATH"
+	NICKNAME     = "NICKNAME"
+	EMAIL_SENDER = "EMAIL_SENDER"
+	APIKEY       = "APIKEY"
 )
 
 const (
-	ApiBaseUrl          = "https://api.coingecko.com/"
-	SimplePriceEndpoint = "api/v3/simple/price"
+	API_BASE_URL          = "API_BASE_URL"
+	SIMPLE_PRICE_ENDPOINT = "SIMPLE_PRICE_ENDPOINT"
 )
 
 const (
-	Bitcoin  = "bitcoin"
-	Ethereum = "ethereum"
-	Litecoin = "litecoin"
+	BITCOIN  = "bitcoin"
+	ETHEREUM = "ethereum"
+	LITECOIN = "litecoin"
 )
 
 const (

@@ -46,7 +46,7 @@ func SubscribeEmail(c *gin.Context) {
 // @Router /subscribe [post]
 func SendEmails(c *gin.Context) {
 
-	err := service.SendRateForSubscribedEmails(constants.Bitcoin, constants.UAH)
+	err := service.SendRateForSubscribedEmails(constants.BITCOIN, constants.UAH)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

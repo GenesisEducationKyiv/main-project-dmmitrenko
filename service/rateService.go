@@ -19,7 +19,7 @@ type ExchangeRateResponse struct {
 }
 
 func FetchExchangeRate(coins []string, currencies []string, precision uint) (ExchangeRateResponse, error) {
-	url := constants.ApiBaseUrl + constants.SimplePriceEndpoint
+	url := constants.API_BASE_URL + constants.SIMPLE_PRICE_ENDPOINT
 
 	queryParams := map[string]string{
 		coinParameters:     strings.Join(coins, ","),

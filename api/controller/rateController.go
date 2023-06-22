@@ -17,7 +17,7 @@ import (
 // @Success 200 {number} decimal
 // @Router /exchange-rate [get]
 func GetExchangeRate(c *gin.Context) {
-	coins := []string{constants.Bitcoin}
+	coins := []string{constants.BITCOIN}
 	currencies := []string{constants.UAH}
 
 	rates, err := service.FetchExchangeRate(coins, currencies, 2)
@@ -26,6 +26,6 @@ func GetExchangeRate(c *gin.Context) {
 		return
 	}
 
-	exchangeRate := rates.Rates[constants.Bitcoin]
+	exchangeRate := rates.Rates[constants.BITCOIN]
 	c.JSON(http.StatusOK, exchangeRate[constants.UAH])
 }
