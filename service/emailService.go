@@ -1,4 +1,4 @@
-package services
+package service
 
 import (
 	"fmt"
@@ -9,15 +9,15 @@ import (
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
 
 	constants "CurrencyRateApp/domain"
-	"CurrencyRateApp/repositories"
+	"CurrencyRateApp/repository"
 )
 
 func AddEmail(email string) error {
-	return repositories.AppendEmailToFile(email)
+	return repository.AppendEmailToFile(email)
 }
 
 func SendRateForSubscribedEmails(coin string, currency string) error {
-	emails, err := repositories.GetAllEmails()
+	emails, err := repository.GetAllEmails()
 	if err != nil {
 		return err
 	}

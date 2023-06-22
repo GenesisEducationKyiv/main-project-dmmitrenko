@@ -2,7 +2,7 @@ package controller
 
 import (
 	constants "CurrencyRateApp/domain"
-	"CurrencyRateApp/services"
+	"CurrencyRateApp/service"
 	"net/http"
 	"regexp"
 
@@ -27,7 +27,7 @@ func SubscribeEmail(c *gin.Context) {
 		return
 	}
 
-	err := services.AddEmail(email)
+	err := service.AddEmail(email)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -46,7 +46,7 @@ func SubscribeEmail(c *gin.Context) {
 // @Router /subscribe [post]
 func SendEmails(c *gin.Context) {
 
-	err := services.SendRateForSubscribedEmails(constants.Bitcoin, constants.UAH)
+	err := service.SendRateForSubscribedEmails(constants.Bitcoin, constants.UAH)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

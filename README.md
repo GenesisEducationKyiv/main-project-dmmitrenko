@@ -23,11 +23,11 @@
 ├── domain/
 │   └── constants.go
 ├── domain/
-│   └── models/
+│   └── model/
 │       └── Rate.go
-├── repositories/
+├── repository/
 │   └── emailRepository.go
-└── services/
+└── service/
     ├── apiClient.go
     ├── emailService.go
     └── rateService.go

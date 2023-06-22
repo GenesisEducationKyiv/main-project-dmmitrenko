@@ -2,7 +2,7 @@ package controller
 
 import (
 	constants "CurrencyRateApp/domain"
-	"CurrencyRateApp/services"
+	"CurrencyRateApp/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -20,7 +20,7 @@ func GetExchangeRate(c *gin.Context) {
 	coins := []string{constants.Bitcoin}
 	currencies := []string{constants.UAH}
 
-	rates, err := services.FetchExchangeRate(coins, currencies, 2)
+	rates, err := service.FetchExchangeRate(coins, currencies, 2)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
