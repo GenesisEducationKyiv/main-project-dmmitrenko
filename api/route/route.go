@@ -9,16 +9,16 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-func SetupRouter() *gin.Engine {
+func SetupRouter(emailController *controller.EmailController, rateController *controller.RateController) *gin.Engine {
 	router := gin.Default()
 
 	router.Use(middleware.ExceptionMiddleware())
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	router.GET("/exchange-rate", controller.GetExchangeRate)
-	router.POST("/email", controller.SubscribeEmail)
-	router.POST("/subscribe", controller.SendEmails)
+	router.GET("/exchange-rate", rateController.GetExchangeRate)
+	router.POST("/email", emailController.SubscribeEmail)
+	router.POST("/subscribe", emailController.SendEmails)
 
 	return router
 }

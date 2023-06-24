@@ -1,28 +1,46 @@
 package service
 
 import (
+	constants "CurrencyRateApp/domain"
+	"CurrencyRateApp/repository"
 	"fmt"
 	"log"
 	"os"
 
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
-
-	constants "CurrencyRateApp/domain"
-	"CurrencyRateApp/repository"
 )
 
-func AddEmail(email string) error {
-	return repository.AppendEmailToFile(email)
+type IEmailService interface {
+	AddEmail(email string) error
+	SendRateForSubscribedEmails(coin string, currency string) error
 }
 
-func SendRateForSubscribedEmails(coin string, currency string) error {
-	emails, err := repository.GetAllEmails()
+type EmailService struct {
+	EmailRepository *repository.EmailRepository
+	RateService     *RateService
+	APIClient       *APIClient
+}
+
+func NewEmailService(emailRepository *repository.EmailRepository, rateService *RateService, apiClient *APIClient) *EmailService {
+	return &EmailService{
+		EmailRepository: emailRepository,
+		RateService:     rateService,
+		APIClient:       apiClient,
+	}
+}
+
+func (r *EmailService) AddEmail(email string) error {
+	return r.EmailRepository.AppendEmailToFile(email)
+}
+
+func (r *EmailService) SendRateForSubscribedEmails(coin string, currency string) error {
+	emails, err := r.EmailRepository.GetAllEmails()
 	if err != nil {
 		return err
 	}
 
-	rates, err := FetchExchangeRate([]string{coin}, []string{currency}, 2)
+	rates, err := r.RateService.FetchExchangeRate([]string{coin}, []string{currency}, 2)
 	if err != nil {
 		return err
 	}

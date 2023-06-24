@@ -2,7 +2,13 @@ package service
 
 import "net/http"
 
-func makeAPIRequest(url string, queryParams map[string]string) (*http.Response, error) {
+type APIClient struct{}
+
+func NewAPIClient() *APIClient {
+	return &APIClient{}
+}
+
+func (c *APIClient) MakeAPIRequest(url string, queryParams map[string]string) (*http.Response, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err

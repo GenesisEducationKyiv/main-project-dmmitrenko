@@ -2,12 +2,26 @@ package controller
 
 import (
 	constants "CurrencyRateApp/domain"
-	"CurrencyRateApp/service"
 	"net/http"
 	"regexp"
 
 	"github.com/gin-gonic/gin"
 )
+
+type IEmailService interface {
+	AddEmail(email string) error
+	SendRateForSubscribedEmails(coin string, currency string) error
+}
+
+type EmailController struct {
+	emailService IEmailService
+}
+
+func NewEmailController(emailService IEmailService) *EmailController {
+	return &EmailController{
+		emailService: emailService,
+	}
+}
 
 // SubscribeEmail godoc
 // @Summary Subscribe email to receive the current rate
@@ -19,7 +33,7 @@ import (
 // @Success 200
 // @Failure 400
 // @Router /email [post]
-func SubscribeEmail(c *gin.Context) {
+func (r *EmailController) SubscribeEmail(c *gin.Context) {
 	email := c.PostForm("email")
 
 	if !isValidEmail(email) {
@@ -27,7 +41,7 @@ func SubscribeEmail(c *gin.Context) {
 		return
 	}
 
-	err := service.AddEmail(email)
+	err := r.emailService.AddEmail(email)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -44,9 +58,9 @@ func SubscribeEmail(c *gin.Context) {
 // @Success 200
 // @Failure 500
 // @Router /subscribe [post]
-func SendEmails(c *gin.Context) {
+func (r *EmailController) SendEmails(c *gin.Context) {
 
-	err := service.SendRateForSubscribedEmails(constants.BITCOIN, constants.UAH)
+	err := r.emailService.SendRateForSubscribedEmails(constants.BITCOIN, constants.UAH)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

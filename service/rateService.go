@@ -8,6 +8,16 @@ import (
 	"strings"
 )
 
+type RateService struct {
+	ApiClient *APIClient
+}
+
+func NewRateService(apiClient *APIClient) *RateService {
+	return &RateService{
+		ApiClient: apiClient,
+	}
+}
+
 const (
 	coinParameters     = "ids"
 	currencyParameters = "vs_currencies"
@@ -18,7 +28,7 @@ type ExchangeRateResponse struct {
 	Rates map[string]map[string]float64 `json:"rates"`
 }
 
-func FetchExchangeRate(coins []string, currencies []string, precision uint) (ExchangeRateResponse, error) {
+func (r *RateService) FetchExchangeRate(coins []string, currencies []string, precision uint) (ExchangeRateResponse, error) {
 	url := constants.API_BASE_URL + constants.SIMPLE_PRICE_ENDPOINT
 
 	queryParams := map[string]string{
@@ -27,7 +37,9 @@ func FetchExchangeRate(coins []string, currencies []string, precision uint) (Exc
 		currencyPrecision:  strconv.Itoa(int(precision)),
 	}
 
-	resp, err := makeAPIRequest(url, queryParams)
+	apiClient := NewAPIClient()
+	resp, err := apiClient.MakeAPIRequest(url, queryParams)
+
 	if err != nil {
 		return ExchangeRateResponse{}, err
 	}

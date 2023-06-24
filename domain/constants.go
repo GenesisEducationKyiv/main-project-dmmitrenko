@@ -8,8 +8,8 @@ const (
 )
 
 const (
-	API_BASE_URL          = "API_BASE_URL"
-	SIMPLE_PRICE_ENDPOINT = "SIMPLE_PRICE_ENDPOINT"
+	API_BASE_URL          = "https://api.coingecko.com/"
+	SIMPLE_PRICE_ENDPOINT = "api/v3/simple/price"
 )
 
 const (

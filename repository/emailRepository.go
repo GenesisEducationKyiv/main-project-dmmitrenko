@@ -7,13 +7,19 @@ import (
 	"strings"
 )
 
-func AppendEmailToFile(email string) error {
+type EmailRepository struct{}
+
+func NewEmailRepository() *EmailRepository {
+	return &EmailRepository{}
+}
+
+func (r *EmailRepository) AppendEmailToFile(email string) error {
 	err := createFileIfNotExists()
 	if err != nil {
 		return err
 	}
 
-	emails, err := GetAllEmails()
+	emails, err := r.GetAllEmails()
 	if err != nil {
 		return err
 	}
@@ -38,7 +44,7 @@ func AppendEmailToFile(email string) error {
 	return nil
 }
 
-func GetAllEmails() ([]string, error) {
+func (r *EmailRepository) GetAllEmails() ([]string, error) {
 	var err error
 	_, err = os.Stat(os.Getenv(constants.FILE_PATH))
 	if os.IsNotExist(err) {
