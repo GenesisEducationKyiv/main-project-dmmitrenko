@@ -4,7 +4,7 @@ import (
 	"CurrencyRateApp/api/controller"
 	"CurrencyRateApp/service"
 	"bytes"
-	"io/ioutil"
+
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
@@ -81,7 +81,7 @@ func TestSendEmails(t *testing.T) {
 }
 
 func createTempDir(t *testing.T) string {
-	tempDir, err := ioutil.TempDir("", "test_files")
+	tempDir, err := os.MkdirTemp("", "test_files")
 	if err != nil {
 		t.Fatal(err)
 	}
