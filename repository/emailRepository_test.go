@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -89,7 +88,7 @@ func TestGetAllEmails_FileNotExist(t *testing.T) {
 // Helper functions
 
 func createTempDir(t *testing.T) string {
-	tempDir, err := ioutil.TempDir("", "test_files")
+	tempDir, err := os.MkdirTemp("", "test_files")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -110,16 +109,35 @@ func setEnvFilePath(t *testing.T, filePath string) {
 }
 
 func writeToFile(t *testing.T, filePath, content string) {
-	err := ioutil.WriteFile(filePath, []byte(content), 0644)
+	file, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer file.Close()
+
+	_, err = file.WriteString(content)
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
 func readFile(t *testing.T, filePath string) string {
-	fileContent, err := ioutil.ReadFile(filePath)
+	file, err := os.Open(filePath)
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer file.Close()
+
+	fileInfo, err := file.Stat()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	fileContent := make([]byte, fileInfo.Size())
+	_, err = file.Read(fileContent)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	return string(fileContent)
 }

@@ -4,6 +4,7 @@ import (
 	"CurrencyRateApp/api/controller"
 	"CurrencyRateApp/service"
 	"bytes"
+	"log"
 
 	"mime/multipart"
 	"net/http"
@@ -33,7 +34,11 @@ func TestSubscribeEmail(t *testing.T) {
 
 	body := new(bytes.Buffer)
 	writer := multipart.NewWriter(body)
-	writer.WriteField("email", "test1@example.com")
+	err := writer.WriteField("email", "test1@example.com")
+	if err != nil {
+		log.Printf("Writing error.")
+	}
+
 	writer.Close()
 
 	req, err := http.NewRequest("POST", "/email", body)
