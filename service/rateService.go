@@ -2,19 +2,25 @@ package service
 
 import (
 	constants "CurrencyRateApp/domain"
+	"context"
 	"encoding/json"
 	"io"
+	"net/http"
 	"strconv"
 	"strings"
 )
 
 type RateService struct {
-	ApiClient *APIClient
+	APIClient APIClient
 }
 
-func NewRateService(apiClient *APIClient) *RateService {
+type ApiClient interface {
+	MakeAPIRequest(ctx context.Context, url string, queryParams map[string]string) (*http.Response, error)
+}
+
+func NewRateService(apiClient APIClient) *RateService {
 	return &RateService{
-		ApiClient: apiClient,
+		APIClient: apiClient,
 	}
 }
 
@@ -28,7 +34,7 @@ type ExchangeRateResponse struct {
 	Rates map[string]map[string]float64 `json:"rates"`
 }
 
-func (r *RateService) FetchExchangeRate(coins []string, currencies []string, precision uint) (ExchangeRateResponse, error) {
+func (r *RateService) FetchExchangeRate(ctx context.Context, coins []string, currencies []string, precision uint) (ExchangeRateResponse, error) {
 	url := constants.API_BASE_URL + constants.SIMPLE_PRICE_ENDPOINT
 
 	queryParams := map[string]string{
@@ -37,9 +43,7 @@ func (r *RateService) FetchExchangeRate(coins []string, currencies []string, pre
 		currencyPrecision:  strconv.Itoa(int(precision)),
 	}
 
-	apiClient := NewAPIClient()
-	resp, err := apiClient.MakeAPIRequest(url, queryParams)
-
+	resp, err := r.APIClient.MakeAPIRequest(ctx, url, queryParams)
 	if err != nil {
 		return ExchangeRateResponse{}, err
 	}

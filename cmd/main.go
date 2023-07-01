@@ -25,17 +25,19 @@ func main() {
 func InitializeEmailService() *service.EmailService {
 	emailRepository := repository.NewEmailRepository()
 	apiClient := service.NewAPIClient()
+	rateService := service.NewRateService(apiClient)
 
 	return &service.EmailService{
-		EmailRepository: emailRepository,
+		EmailRepository: *emailRepository,
+		RateService:     *rateService,
 		APIClient:       apiClient,
 	}
 }
 
 func InitializeRateService(emailService *service.EmailService) *service.RateService {
-	apiClient := service.NewAPIClient()
+	apiclient := service.NewAPIClient()
 
 	return &service.RateService{
-		ApiClient: apiClient,
+		APIClient: apiclient,
 	}
 }

@@ -2,22 +2,25 @@ package controller
 
 import (
 	constants "CurrencyRateApp/domain"
+	"context"
 	"net/http"
 	"regexp"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sendgrid/sendgrid-go/helpers/mail"
 )
 
-type IEmailService interface {
-	AddEmail(email string) error
-	SendRateForSubscribedEmails(coin string, currency string) error
+type EmailService interface {
+	SubscribeEmail(email string) error
+	SendRateForSubscribeEmails(ctx context.Context, coin string, currency string) error
+	CreateLetters(coin string, currency string, currencyRate string, emails []string) []*mail.SGMailV3
 }
 
 type EmailController struct {
-	emailService IEmailService
+	emailService EmailService
 }
 
-func NewEmailController(emailService IEmailService) *EmailController {
+func NewEmailController(emailService EmailService) *EmailController {
 	return &EmailController{
 		emailService: emailService,
 	}
@@ -41,7 +44,7 @@ func (r *EmailController) SubscribeEmail(c *gin.Context) {
 		return
 	}
 
-	err := r.emailService.AddEmail(email)
+	err := r.emailService.SubscribeEmail(email)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -60,7 +63,7 @@ func (r *EmailController) SubscribeEmail(c *gin.Context) {
 // @Router /subscribe [post]
 func (r *EmailController) SendEmails(c *gin.Context) {
 
-	err := r.emailService.SendRateForSubscribedEmails(constants.BITCOIN, constants.UAH)
+	err := r.emailService.SendRateForSubscribeEmails(c, constants.BITCOIN, constants.UAH)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

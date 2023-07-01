@@ -3,26 +3,21 @@ package service
 import (
 	constants "CurrencyRateApp/domain"
 	"CurrencyRateApp/repository"
+	"context"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
 )
 
-type IEmailService interface {
-	AddEmail(email string) error
-	SendRateForSubscribedEmails(coin string, currency string) error
-}
-
 type EmailService struct {
-	EmailRepository *repository.EmailRepository
-	RateService     *RateService
-	APIClient       *APIClient
+	EmailRepository repository.EmailRepository
+	RateService     RateService
+	APIClient       APIClient
 }
 
-func NewEmailService(emailRepository *repository.EmailRepository, rateService *RateService, apiClient *APIClient) *EmailService {
+func NewEmailService(emailRepository repository.EmailRepository, rateService RateService, apiClient APIClient) *EmailService {
 	return &EmailService{
 		EmailRepository: emailRepository,
 		RateService:     rateService,
@@ -30,45 +25,49 @@ func NewEmailService(emailRepository *repository.EmailRepository, rateService *R
 	}
 }
 
-func (r *EmailService) AddEmail(email string) error {
+func (r *EmailService) SubscribeEmail(email string) error {
 	return r.EmailRepository.AppendEmailToFile(email)
 }
 
-func (r *EmailService) SendRateForSubscribedEmails(coin string, currency string) error {
+func (r *EmailService) SendRateForSubscribeEmails(ctx context.Context, coin string, currency string) error {
 	emails, err := r.EmailRepository.GetAllEmails()
 	if err != nil {
 		return err
 	}
 
-	rates, err := r.RateService.FetchExchangeRate([]string{coin}, []string{currency}, 2)
+	rates, err := r.RateService.FetchExchangeRate(ctx, []string{coin}, []string{currency}, 2)
 	if err != nil {
 		return err
 	}
 
-	from := mail.NewEmail(os.Getenv(constants.NICKNAME), os.Getenv(constants.EMAIL_SENDER))
-	htmlContentTemplate := "<p>RATE: %.2f</p>"
-
+	emailsToSend := r.CreateLetters(coin, currency, fmt.Sprintf("%b", rates.Rates[coin][currency]), emails)
 	client := sendgrid.NewSendClient(os.Getenv(constants.APIKEY))
 
-	for _, email := range emails {
-		to := mail.NewEmail("", email)
-
-		plainTextContent := fmt.Sprintf("RATE: %.2f", rates.Rates[coin][currency])
-		htmlContent := fmt.Sprintf(htmlContentTemplate, rates.Rates[coin][currency])
-		subjectTemplate := fmt.Sprintf("%s to %s rate", coin, currency)
-
-		message := mail.NewSingleEmail(from, subjectTemplate, to, plainTextContent, htmlContent)
-
-		response, err := client.Send(message)
+	for _, emailToSend := range emailsToSend {
+		response, err := client.Send(emailToSend)
 		if err != nil {
-			log.Println(err)
 			return err
 		}
-
 		fmt.Println(response.StatusCode)
-		fmt.Println(response.Body)
-		fmt.Println(response.Headers)
 	}
 
 	return nil
+}
+
+func (r *EmailService) CreateLetters(coin string, currency string, currencyRate string, emails []string) []*mail.SGMailV3 {
+	from := mail.NewEmail(os.Getenv(constants.NICKNAME), os.Getenv(constants.EMAIL_SENDER))
+
+	htmlContentTemplate := "<p>RATE: %s</p>"
+	plainTextContent := fmt.Sprintf("RATE: %s", currencyRate)
+	htmlContent := fmt.Sprintf(htmlContentTemplate, currencyRate)
+	subjectTemplate := fmt.Sprintf("%s to %s rate", coin, currency)
+
+	var letters []*mail.SGMailV3
+	for _, email := range emails {
+		to := mail.NewEmail("", email)
+		letter := mail.NewSingleEmail(from, subjectTemplate, to, plainTextContent, htmlContent)
+		letters = append(letters, letter)
+	}
+
+	return letters
 }
