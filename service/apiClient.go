@@ -5,13 +5,17 @@ import (
 	"net/http"
 )
 
-type APIClient struct{}
-
-func NewAPIClient() APIClient {
-	return APIClient{}
+type APIClient interface {
+	MakeAPIRequest(ctx context.Context, url string, queryParams map[string]string, headers map[string]string) (*http.Response, error)
 }
 
-func (c *APIClient) MakeAPIRequest(ctx context.Context, url string, queryParams map[string]string) (*http.Response, error) {
+type ApiClientBase struct{}
+
+func NewAPIClient() ApiClientBase {
+	return ApiClientBase{}
+}
+
+func (c *ApiClientBase) MakeAPIRequest(ctx context.Context, url string, queryParams map[string]string, headers map[string]string) (*http.Response, error) {
 	request, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
@@ -24,6 +28,12 @@ func (c *APIClient) MakeAPIRequest(ctx context.Context, url string, queryParams 
 		q.Add(key, value)
 	}
 	request.URL.RawQuery = q.Encode()
+
+	if headers != nil {
+		for key, value := range headers {
+			request.Header.Add(key, value)
+		}
+	}
 
 	client := &http.Client{}
 	resp, err := client.Do(request)

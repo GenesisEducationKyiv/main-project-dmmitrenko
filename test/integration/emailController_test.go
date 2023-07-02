@@ -61,7 +61,15 @@ func TestSubscribeEmailIntegration(t *testing.T) {
 
 	emailRepository := repository.NewEmailRepository(writer, reader)
 	apiClient := service.NewAPIClient()
-	rateService := service.NewRateService(apiClient)
+	coinMarketProvider := &service.CoinMarketProvider{
+		Automapper: &service.CoinMarkerExchangeRateResponseMapper{},
+		ApiClient:  apiClient,
+	}
+	coingeckoProvider := &service.CoingeckoProvider{
+		Automapper: &service.CoingeckoExchangeRateResponseMapper{},
+		ApiClient:  apiClient,
+	}
+	rateService := service.NewRateService(coingeckoProvider, coinMarketProvider)
 	emailService := service.NewEmailService(*emailRepository, *rateService, apiClient)
 
 	emailController := controller.NewEmailController(emailService)

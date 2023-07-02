@@ -3,21 +3,16 @@ package controller
 import (
 	constants "CurrencyRateApp/domain"
 	"CurrencyRateApp/service"
-	"context"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-type RateServiceInterface interface {
-	FetchExchangeRate(ctx context.Context, coins []string, currencies []string, precision uint) (service.ExchangeRateResponse, error)
-}
-
 type RateController struct {
-	rateService RateServiceInterface
+	rateService service.RateProvider
 }
 
-func NewRateController(rateService RateServiceInterface) *RateController {
+func NewRateController(rateService service.RateProvider) *RateController {
 	return &RateController{
 		rateService: rateService,
 	}
@@ -42,6 +37,6 @@ func (r *RateController) GetBitcoinToUahExchangeRate(c *gin.Context) {
 		return
 	}
 
-	exchangeRate := rates.Rates[constants.BITCOIN]
-	c.JSON(http.StatusOK, exchangeRate[constants.UAH])
+	exchangeRate := rates.Rates["BTC/UAH"]
+	c.JSON(http.StatusOK, exchangeRate)
 }

@@ -40,7 +40,17 @@ func InitializeEmailService() *service.EmailService {
 
 	emailRepository := repository.NewEmailRepository(writeFile, file)
 	apiClient := service.NewAPIClient()
-	rateService := service.NewRateService(apiClient)
+
+	coinMarketProvider := &service.CoinMarketProvider{
+		Automapper: &service.CoinMarkerExchangeRateResponseMapper{},
+		ApiClient:  service.NewAPIClient(),
+	}
+	coingeckoProvider := &service.CoingeckoProvider{
+		Automapper: &service.CoingeckoExchangeRateResponseMapper{},
+		ApiClient:  service.NewAPIClient(),
+	}
+
+	rateService := service.NewRateService(coinMarketProvider, coingeckoProvider)
 
 	return &service.EmailService{
 		EmailRepository: *emailRepository,
@@ -50,11 +60,16 @@ func InitializeEmailService() *service.EmailService {
 }
 
 func InitializeRateService(emailService *service.EmailService) *service.RateService {
-	apiclient := service.NewAPIClient()
-
-	return &service.RateService{
-		APIClient: apiclient,
+	coinMarketProvider := &service.CoinMarketProvider{
+		Automapper: &service.CoinMarkerExchangeRateResponseMapper{},
+		ApiClient:  service.NewAPIClient(),
 	}
+	coingeckoProvider := &service.CoingeckoProvider{
+		Automapper: &service.CoingeckoExchangeRateResponseMapper{},
+		ApiClient:  service.NewAPIClient(),
+	}
+
+	return service.NewRateService(coingeckoProvider, coinMarketProvider)
 }
 
 func createFileIfNotExists(filePath string) {

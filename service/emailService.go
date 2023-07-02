@@ -14,10 +14,10 @@ import (
 type EmailService struct {
 	EmailRepository repository.EmailRepository
 	RateService     RateService
-	APIClient       APIClient
+	APIClient       ApiClientBase
 }
 
-func NewEmailService(emailRepository repository.EmailRepository, rateService RateService, apiClient APIClient) *EmailService {
+func NewEmailService(emailRepository repository.EmailRepository, rateService RateService, apiClient ApiClientBase) *EmailService {
 	return &EmailService{
 		EmailRepository: emailRepository,
 		RateService:     rateService,
@@ -40,7 +40,7 @@ func (r *EmailService) SendRateForSubscribeEmails(ctx context.Context, coin stri
 		return err
 	}
 
-	emailsToSend := r.CreateLetters(coin, currency, fmt.Sprintf("%b", rates.Rates[coin][currency]), emails)
+	emailsToSend := r.CreateLetters(coin, currency, fmt.Sprintf("%b", rates.Rates[""]), emails)
 	client := sendgrid.NewSendClient(os.Getenv(constants.APIKEY))
 
 	for _, emailToSend := range emailsToSend {
