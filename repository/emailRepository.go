@@ -1,24 +1,24 @@
 package repository
 
 import (
-	constants "CurrencyRateApp/domain"
 	"fmt"
-	"os"
+	"io"
 	"strings"
 )
 
-type EmailRepository struct{}
+type EmailRepository struct {
+	writer io.Writer
+	reader io.Reader
+}
 
-func NewEmailRepository() *EmailRepository {
-	return &EmailRepository{}
+func NewEmailRepository(writer io.Writer, reader io.Reader) *EmailRepository {
+	return &EmailRepository{
+		writer: writer,
+		reader: reader,
+	}
 }
 
 func (r *EmailRepository) AppendEmailToFile(email string) error {
-	err := createFileIfNotExists()
-	if err != nil {
-		return err
-	}
-
 	emails, err := r.GetAllEmails()
 	if err != nil {
 		return err
@@ -30,13 +30,7 @@ func (r *EmailRepository) AppendEmailToFile(email string) error {
 		}
 	}
 
-	file, err := os.OpenFile(os.Getenv(constants.FILE_PATH), os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	_, err = file.WriteString(email + "\n")
+	_, err = fmt.Fprintln(r.writer, email)
 	if err != nil {
 		return err
 	}
@@ -46,27 +40,13 @@ func (r *EmailRepository) AppendEmailToFile(email string) error {
 
 func (r *EmailRepository) GetAllEmails() ([]string, error) {
 	var err error
-	_, err = os.Stat(os.Getenv(constants.FILE_PATH))
-	if os.IsNotExist(err) {
-		return []string{}, nil
-	}
 
-	data, err := os.ReadFile(os.Getenv(constants.FILE_PATH))
+	emailsData, err := io.ReadAll(r.reader)
 	if err != nil {
 		return nil, err
 	}
 
-	emails := strings.Split(strings.TrimSpace(string(data)), "\n")
+	emails := strings.Split(strings.TrimSpace(string(emailsData)), "\n")
 
 	return emails, nil
-}
-
-func createFileIfNotExists() error {
-	if _, err := os.Stat(os.Getenv(constants.FILE_PATH)); os.IsNotExist(err) {
-		_, err := os.Create(os.Getenv(constants.FILE_PATH))
-		if err != nil {
-			return err
-		}
-	}
-	return nil
 }

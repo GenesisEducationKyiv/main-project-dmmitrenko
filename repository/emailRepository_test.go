@@ -1,143 +1,73 @@
-package repository
+package repository_test
 
 import (
-	"os"
-	"path/filepath"
+	"bytes"
+	"io"
+	"strings"
 	"testing"
+
+	"CurrencyRateApp/repository"
+
+	"github.com/stretchr/testify/assert"
 )
 
-func TestAppendEmailToFile_Success(t *testing.T) {
-	// Arrange
-	tempDir := createTempDir(t)
-	defer os.RemoveAll(tempDir)
-
-	filePath := createTempFilePath(t, tempDir)
-	setEnvFilePath(t, filePath)
-
-	existingEmail := "existing_email@example.com"
-	writeToFile(t, filePath, existingEmail+"\n")
-
-	newEmail := "new_email@example.com"
-
-	repo := NewEmailRepository()
-
-	// Act
-	err := repo.AppendEmailToFile(newEmail)
-
-	// Assert
-	if err != nil {
-		t.Fatalf("Expected no error, got: %v", err)
-	}
-
-	fileContent := readFile(t, filePath)
-
-	expectedContent := existingEmail + "\n" + newEmail + "\n"
-	if fileContent != expectedContent {
-		t.Errorf("Expected file content:\n%s\nGot:\n%s", expectedContent, fileContent)
-	}
+type mockReader struct {
+	data []byte
 }
 
-func TestAppendEmailToFile_Error(t *testing.T) {
-	// Arrange
-	tempDir := createTempDir(t)
-	defer os.RemoveAll(tempDir)
-
-	filePath := createTempFilePath(t, tempDir)
-	setEnvFilePath(t, filePath)
-
-	existingEmail := "existing_email@example.com"
-	writeToFile(t, filePath, existingEmail+"\n")
-
-	repo := NewEmailRepository()
-
-	// Act
-	err := repo.AppendEmailToFile(existingEmail)
-
-	// Assert
-	expectedError := "email already exists: existing_email@example.com"
-	if err == nil {
-		t.Error("Expected error, got nil")
-	} else if err.Error() != expectedError {
-		t.Errorf("Expected error: %s, got: %s", expectedError, err.Error())
-	}
+func (r *mockReader) Read(p []byte) (n int, err error) {
+	copy(p, r.data)
+	return len(r.data), io.EOF
 }
 
-func TestGetAllEmails_FileNotExist(t *testing.T) {
-	// Arrange
-	tempDir := createTempDir(t)
-	defer os.RemoveAll(tempDir)
+type mockWriter struct {
+	buffer bytes.Buffer
+}
 
-	filePath := createTempFilePath(t, tempDir)
-	setEnvFilePath(t, filePath)
+func (w *mockWriter) Write(p []byte) (n int, err error) {
+	return w.buffer.Write(p)
+}
 
-	repo := NewEmailRepository()
+func TestEmailRepository_AppendEmailToFile(t *testing.T) {
+	var buf bytes.Buffer
+	emailRepo := repository.NewEmailRepository(&buf, &buf)
 
-	// Act
+	existingEmail := "existing@example.com"
+	newEmail := "new@example.com"
+
+	_, err := buf.WriteString(existingEmail + "\n")
+	assert.NoError(t, err)
+
+	err = emailRepo.AppendEmailToFile(newEmail)
+	assert.NoError(t, err)
+
+	assert.Contains(t, buf.String(), newEmail)
+}
+
+func TestEmailRepository_GetAllEmails(t *testing.T) {
+	existingEmails := []string{"test1@example.com", "test2@example.com"}
+
+	reader := &mockReader{data: []byte(strings.Join(existingEmails, "\n"))}
+
+	repo := repository.NewEmailRepository(nil, reader)
+
 	emails, err := repo.GetAllEmails()
 
-	// Assert
-	if err != nil {
-		t.Fatalf("Expected no error, got: %v", err)
-	}
-
-	if len(emails) != 0 {
-		t.Errorf("Expected empty email list, got: %v", emails)
-	}
+	assert.NoError(t, err, "unexpected error")
+	assert.Equal(t, existingEmails, emails, "incorrect emails returned")
 }
 
-// Helper functions
+func TestEmailRepository_AppendEmailToFile_EmailAlreadyExists(t *testing.T) {
+	existingEmails := []string{"test1@example.com", "test2@example.com"}
+	existingEmail := existingEmails[0]
 
-func createTempDir(t *testing.T) string {
-	tempDir, err := os.MkdirTemp("", "test_files")
-	if err != nil {
-		t.Fatal(err)
-	}
-	return tempDir
-}
+	writer := &mockWriter{}
 
-func createTempFilePath(t *testing.T, tempDir string) string {
-	testFilePath := "test_file.txt"
-	filePath := filepath.Join(tempDir, testFilePath)
-	return filePath
-}
+	reader := &mockReader{data: []byte(strings.Join(existingEmails, "\n"))}
 
-func setEnvFilePath(t *testing.T, filePath string) {
-	err := os.Setenv("FILE_PATH", filePath)
-	if err != nil {
-		t.Fatal(err)
-	}
-}
+	repo := repository.NewEmailRepository(writer, reader)
 
-func writeToFile(t *testing.T, filePath, content string) {
-	file, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE, 0644)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer file.Close()
+	err := repo.AppendEmailToFile(existingEmail)
 
-	_, err = file.WriteString(content)
-	if err != nil {
-		t.Fatal(err)
-	}
-}
-
-func readFile(t *testing.T, filePath string) string {
-	file, err := os.Open(filePath)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer file.Close()
-
-	fileInfo, err := file.Stat()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	fileContent := make([]byte, fileInfo.Size())
-	_, err = file.Read(fileContent)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	return string(fileContent)
+	assert.Error(t, err, "expected error")
 }

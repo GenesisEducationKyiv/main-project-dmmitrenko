@@ -4,8 +4,10 @@ import (
 	"CurrencyRateApp/api/controller"
 	_ "CurrencyRateApp/api/docs"
 	"CurrencyRateApp/api/route"
+	constants "CurrencyRateApp/domain"
 	"CurrencyRateApp/repository"
 	"CurrencyRateApp/service"
+	"os"
 )
 
 func main() {
@@ -23,7 +25,20 @@ func main() {
 }
 
 func InitializeEmailService() *service.EmailService {
-	emailRepository := repository.NewEmailRepository()
+	filePath := os.Getenv(constants.FILE_PATH)
+	createFileIfNotExists(filePath)
+
+	file, err := os.Open(filePath)
+	if err != nil {
+		panic(err)
+	}
+
+	writeFile, err := os.OpenFile(filePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		panic(err)
+	}
+
+	emailRepository := repository.NewEmailRepository(writeFile, file)
 	apiClient := service.NewAPIClient()
 	rateService := service.NewRateService(apiClient)
 
@@ -39,5 +54,15 @@ func InitializeRateService(emailService *service.EmailService) *service.RateServ
 
 	return &service.RateService{
 		APIClient: apiclient,
+	}
+}
+
+func createFileIfNotExists(filePath string) {
+	_, err := os.Stat(filePath)
+	if os.IsNotExist(err) {
+		_, err := os.Create(filePath)
+		if err != nil {
+			panic(err)
+		}
 	}
 }

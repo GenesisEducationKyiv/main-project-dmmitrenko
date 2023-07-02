@@ -1,88 +1,132 @@
 package integration
 
-// import (
-// 	"CurrencyRateApp/api/controller"
-// 	"net/http"
-// 	"net/http/httptest"
-// 	"net/url"
-// 	"strings"
-// 	"testing"
+import (
+	"CurrencyRateApp/api/controller"
+	"CurrencyRateApp/repository"
+	"CurrencyRateApp/service"
+	"context"
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
+	"os"
+	"strconv"
+	"strings"
+	"testing"
 
-// 	"github.com/gin-gonic/gin"
-// 	"github.com/stretchr/testify/assert"
-// )
+	"github.com/gin-gonic/gin"
+	"github.com/sendgrid/sendgrid-go/helpers/mail"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+)
 
-// type MockEmailService struct {
-// 	mockError error
-// }
+type MockEmailService struct {
+	mock.Mock
+}
 
-// func (m *MockEmailService) AddEmail(email string) error {
-// 	return m.mockError
-// }
+func (m *MockEmailService) CreateLetters(coin string, currency string, currencyRate string, emails []string) []*mail.SGMailV3 {
+	args := m.Called(emails)
+	return args.Get(0).([]*mail.SGMailV3)
+}
 
-// func (m *MockEmailService) SendRateForSubscribedEmails(coin string, currency string) error {
-// 	return m.mockError
-// }
+func (m *MockEmailService) SendRateForSubscribeEmails(ctx context.Context, coin string, currency string) error {
+	args := m.Called()
+	return args.Error(0)
+}
 
-// func TestIntegrationSubscribeEmail_Success(t *testing.T) {
-// 	// Arrange
-// 	mockService := &MockEmailService{
-// 		mockError: nil,
-// 	}
-// 	controller := controller.NewEmailController(mockService)
-// 	router := gin.Default()
-// 	router.POST("/email", controller.SubscribeEmail)
-// 	recorder := httptest.NewRecorder()
-// 	formData := url.Values{
-// 		"email": []string{"test@example.com"},
-// 	}
+func (m *MockEmailService) SubscribeEmail(email string) error {
+	args := m.Called()
+	return args.Error(0)
 
-// 	// Act
-// 	request, _ := http.NewRequest("POST", "/email", strings.NewReader(formData.Encode()))
-// 	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-// 	router.ServeHTTP(recorder, request)
+}
 
-// 	// Assert
-// 	assert.Equal(t, http.StatusOK, recorder.Code)
-// 	assert.JSONEq(t, `{"message":"Email is successfully subscribed to the newsletter."}`, recorder.Body.String())
-// }
+func TestSubscribeEmailIntegration(t *testing.T) {
+	// Arrange
+	router := gin.Default()
 
-// func TestIntegrationSubscribeEmail_InvalidEmail(t *testing.T) {
-// 	// Arrange
-// 	mockService := &MockEmailService{}
-// 	controller := controller.NewEmailController(mockService)
-// 	router := gin.Default()
-// 	router.POST("/email", controller.SubscribeEmail)
-// 	recorder := httptest.NewRecorder()
-// 	formData := map[string][]string{
-// 		"email": {"invalid_email"},
-// 	}
+	tempFile, err := ioutil.TempFile("", "test_emails_*.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	filePath := tempFile.Name()
+	defer os.Remove(filePath)
 
-// 	// Act
-// 	request, _ := http.NewRequest("POST", "/email", nil)
-// 	request.PostForm = formData
-// 	router.ServeHTTP(recorder, request)
+	writer, err := os.OpenFile(filePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		t.Fatal(err)
+	}
+	reader, err := os.Open(filePath)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-// 	// Assert
-// 	assert.Equal(t, http.StatusBadRequest, recorder.Code)
-// 	assert.JSONEq(t, `{"error":"Invalid email address."}`, recorder.Body.String())
-// }
+	emailRepository := repository.NewEmailRepository(writer, reader)
+	apiClient := service.NewAPIClient()
+	rateService := service.NewRateService(apiClient)
+	emailService := service.NewEmailService(*emailRepository, *rateService, apiClient)
 
-// func TestIntegrationSendEmails_Success(t *testing.T) {
-// 	// Arrange
-// 	mockService := &MockEmailService{
-// 		mockError: nil,
-// 	}
-// 	controller := controller.NewEmailController(mockService)
-// 	router := gin.Default()
-// 	router.POST("/subscribe", controller.SendEmails)
-// 	recorder := httptest.NewRecorder()
-// 	request, _ := http.NewRequest("POST", "/subscribe", nil)
+	emailController := controller.NewEmailController(emailService)
 
-// 	// Act
-// 	router.ServeHTTP(recorder, request)
+	router.POST("/email", emailController.SubscribeEmail)
 
-// 	// Assert
-// 	assert.Equal(t, http.StatusOK, recorder.Code)
-// 	assert.JSONEq(t, `{"message":"Letters sent successfully."}`, recorder.Body.String())
-// }
+	formData := url.Values{}
+	formData.Set("email", "test@example.com")
+	formDataReader := strings.NewReader(formData.Encode())
+
+	req, err := http.NewRequest("POST", "/email", formDataReader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Content-Length", strconv.Itoa(len(formData.Encode())))
+
+	rec := httptest.NewRecorder()
+
+	// Act
+	router.ServeHTTP(rec, req)
+
+	// Assert
+	assert.Equal(t, http.StatusOK, rec.Code)
+	expectedResponseBody := `{"message":"Email is successfully subscribed to the newsletter."}`
+	assert.Equal(t, expectedResponseBody, rec.Body.String())
+
+	emails, err := emailRepository.GetAllEmails()
+	assert.NoError(t, err)
+	assert.Contains(t, emails, "test@example.com")
+}
+
+func TestSendEmailsIntegration(t *testing.T) {
+	// Arrange
+	router := gin.Default()
+
+	tempFile, err := ioutil.TempFile("", "test_emails_*.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	filePath := tempFile.Name()
+	defer os.Remove(filePath)
+
+	mockEmailService := &MockEmailService{}
+	mockEmailService.On("SendRateForSubscribeEmails").Return(nil)
+
+	emailController := controller.NewEmailController(mockEmailService)
+
+	router.POST("/subscribe", emailController.SendEmails)
+
+	req, err := http.NewRequest("POST", "/subscribe", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rec := httptest.NewRecorder()
+
+	// Act
+	router.ServeHTTP(rec, req)
+
+	// Assert
+	assert.Equal(t, http.StatusOK, rec.Code)
+	expectedResponseBody := `{"message":"Letters sent successfully."}`
+	assert.Equal(t, expectedResponseBody, rec.Body.String())
+
+	mockEmailService.AssertCalled(t, "SendRateForSubscribeEmails")
+}
