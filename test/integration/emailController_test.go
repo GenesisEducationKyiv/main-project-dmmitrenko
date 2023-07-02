@@ -5,7 +5,6 @@ import (
 	"CurrencyRateApp/repository"
 	"CurrencyRateApp/service"
 	"context"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -44,7 +43,7 @@ func TestSubscribeEmailIntegration(t *testing.T) {
 	// Arrange
 	router := gin.Default()
 
-	tempFile, err := ioutil.TempFile("", "test_emails_*.txt")
+	tempFile, err := os.CreateTemp("", "test_emails_*.txt")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -99,7 +98,7 @@ func TestSendEmailsIntegration(t *testing.T) {
 	// Arrange
 	router := gin.Default()
 
-	tempFile, err := ioutil.TempFile("", "test_emails_*.txt")
+	tempFile, err := os.CreateTemp("", "test_emails_*.txt")
 	if err != nil {
 		t.Fatal(err)
 	}
