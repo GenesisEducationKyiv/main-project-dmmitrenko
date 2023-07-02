@@ -2,8 +2,11 @@ package controller
 
 import (
 	constants "CurrencyRateApp/domain"
+	_ "CurrencyRateApp/domain/model"
 	"CurrencyRateApp/service"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -39,4 +42,38 @@ func (r *RateController) GetBitcoinToUahExchangeRate(c *gin.Context) {
 
 	exchangeRate := rates.Rates["BTC/UAH"]
 	c.JSON(http.StatusOK, exchangeRate)
+}
+
+// GetCoinExchangeRate godoc
+// @Summary Get the exchange rate for a crypto coin
+// @Description Returns the current exchange rate for a crypto coin
+// @Tags rate
+// @Accept multipart/form-data
+// @Produce json
+// @Param coins formData string true "Comma-separated list of crypto coins"
+// @Param currencies formData string true "Comma-separated list of currencies"
+// @Param precision formData string true "Precision of the exchange rate"
+// @Success 200
+// @Failure 400
+// @Router /exchange-rate [post]
+func (r *RateController) GetCoinExchangeRate(c *gin.Context) {
+	coins := c.PostForm("coins")
+	currencies := c.PostForm("currencies")
+	precisionStr := c.PostForm("precision")
+
+	coinList := strings.Split(coins, ",")
+	currencyList := strings.Split(currencies, ",")
+	precision, err := strconv.ParseUint(precisionStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	rates, err := r.rateService.FetchExchangeRate(c, coinList, currencyList, uint(precision))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, rates)
 }

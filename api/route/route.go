@@ -17,6 +17,7 @@ func SetupRouter(emailController *controller.EmailController, rateController *co
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	router.GET("/exchange-rate", rateController.GetBitcoinToUahExchangeRate)
+	router.POST("/exchange-rate", rateController.GetCoinExchangeRate)
 	router.POST("/email", emailController.SubscribeEmail)
 	router.POST("/subscribe", emailController.SendEmails)
 

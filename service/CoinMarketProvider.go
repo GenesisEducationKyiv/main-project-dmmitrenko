@@ -4,7 +4,7 @@ import (
 	"CurrencyRateApp/domain/model"
 	"context"
 	"encoding/json"
-	"fmt"
+	"strings"
 )
 
 const (
@@ -29,21 +29,28 @@ func (r *CoinMarketProvider) FetchExchangeRate(ctx context.Context, coins []stri
 
 	url := coinMarketCapAPIURL
 
+	normalizedCoins := make([]string, len(coins))
+	for i, coin := range coins {
+		normalizedCoins[i] = model.NormalizeCurrency(strings.ToLower(coin))
+	}
+
 	headers := map[string]string{
 		"X-CMC_PRO_API_KEY": apiKey,
 	}
 
 	queryParams := map[string]string{
-		"symbol":  "BTC",
-		"convert": "UAH",
+		"symbol":  strings.Join(normalizedCoins, ","),
+		"convert": strings.Join(currencies, ","),
 	}
 
 	resp, err := r.ApiClient.MakeAPIRequest(ctx, url, queryParams, headers)
+	if err != nil {
+		return model.Rate{}, err
+	}
 
 	var exchangeRateResponse CoinMarkerExchangeRateResponse
 	err = json.NewDecoder(resp.Body).Decode(&exchangeRateResponse)
 	if err != nil {
-		fmt.Println("Ошибка при декодировании JSON:", err)
 		return model.Rate{}, err
 	}
 
