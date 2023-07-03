@@ -35,10 +35,8 @@ func (c *ApiClientBase) MakeAPIRequest(ctx context.Context, url string, queryPar
 	}
 	request.URL.RawQuery = q.Encode()
 
-	if headers != nil {
-		for key, value := range headers {
-			request.Header.Add(key, value)
-		}
+	for key, value := range headers {
+		request.Header.Add(key, value)
 	}
 
 	c.Logger.WithFields(logrus.Fields{
