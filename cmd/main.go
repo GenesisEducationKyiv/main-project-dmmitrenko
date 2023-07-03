@@ -8,23 +8,33 @@ import (
 	"CurrencyRateApp/repository"
 	"CurrencyRateApp/service"
 	"os"
+
+	"github.com/sirupsen/logrus"
 )
 
 func main() {
-	emailService := InitializeEmailService()
-	rateService := InitializeRateService(emailService)
+	logger := logrus.New()
+	logger.SetFormatter(&logrus.TextFormatter{
+		ForceColors: true,
+	})
+	logger.SetLevel((logrus.DebugLevel))
+	logger.SetOutput(os.Stdout)
+
+	emailService := InitializeEmailService(logger)
+	rateService := InitializeRateService(emailService, logger)
 
 	emailController := controller.NewEmailController(emailService)
 	rateController := controller.NewRateController(rateService)
 
-	router := route.SetupRouter(emailController, rateController)
+	router := route.SetupRouter(emailController, rateController, logger)
+
 	err := router.Run(":8080")
 	if err != nil {
 		panic(err)
 	}
 }
 
-func InitializeEmailService() *service.EmailService {
+func InitializeEmailService(logger *logrus.Logger) *service.EmailService {
 	filePath := os.Getenv(constants.FILE_PATH)
 	createFileIfNotExists(filePath)
 
@@ -39,15 +49,15 @@ func InitializeEmailService() *service.EmailService {
 	}
 
 	emailRepository := repository.NewEmailRepository(writeFile, file)
-	apiClient := service.NewAPIClient()
+	apiClient := service.NewAPIClient(logger)
 
 	coinMarketProvider := &service.CoinMarketProvider{
 		Automapper: &service.CoinMarkerExchangeRateResponseMapper{},
-		ApiClient:  service.NewAPIClient(),
+		ApiClient:  service.NewAPIClient(logger),
 	}
 	coingeckoProvider := &service.CoingeckoProvider{
 		Automapper: &service.CoingeckoExchangeRateResponseMapper{},
-		ApiClient:  service.NewAPIClient(),
+		ApiClient:  service.NewAPIClient(logger),
 	}
 
 	rateService := service.NewRateService(coinMarketProvider, coingeckoProvider)
@@ -59,14 +69,14 @@ func InitializeEmailService() *service.EmailService {
 	}
 }
 
-func InitializeRateService(emailService *service.EmailService) *service.RateService {
+func InitializeRateService(emailService *service.EmailService, logger *logrus.Logger) *service.RateService {
 	coinMarketProvider := &service.CoinMarketProvider{
 		Automapper: &service.CoinMarkerExchangeRateResponseMapper{},
-		ApiClient:  service.NewAPIClient(),
+		ApiClient:  service.NewAPIClient(logger),
 	}
 	coingeckoProvider := &service.CoingeckoProvider{
 		Automapper: &service.CoingeckoExchangeRateResponseMapper{},
-		ApiClient:  service.NewAPIClient(),
+		ApiClient:  service.NewAPIClient(logger),
 	}
 
 	return service.NewRateService(coingeckoProvider, coinMarketProvider)

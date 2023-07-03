@@ -44,6 +44,7 @@ require (
 	github.com/sendgrid/sendgrid-go v3.12.0+incompatible // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
+	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.8.4
 	github.com/swaggo/files v1.0.1 // indirect
 	github.com/swaggo/gin-swagger v1.6.0 // indirect

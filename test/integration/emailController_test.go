@@ -15,6 +15,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -59,8 +60,9 @@ func TestSubscribeEmailIntegration(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	logger := logrus.New()
 	emailRepository := repository.NewEmailRepository(writer, reader)
-	apiClient := service.NewAPIClient()
+	apiClient := service.NewAPIClient(logger)
 	coinMarketProvider := &service.CoinMarketProvider{
 		Automapper: &service.CoinMarkerExchangeRateResponseMapper{},
 		ApiClient:  apiClient,
