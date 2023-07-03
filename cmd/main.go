@@ -60,7 +60,7 @@ func InitializeEmailService(logger *logrus.Logger) *service.EmailService {
 		ApiClient:  service.NewAPIClient(logger),
 	}
 
-	rateService := service.NewRateService(coinMarketProvider, coingeckoProvider)
+	rateService := service.NewRateService(logger, coinMarketProvider, coingeckoProvider)
 
 	return &service.EmailService{
 		EmailRepository: *emailRepository,
@@ -79,7 +79,7 @@ func InitializeRateService(emailService *service.EmailService, logger *logrus.Lo
 		ApiClient:  service.NewAPIClient(logger),
 	}
 
-	return service.NewRateService(coingeckoProvider, coinMarketProvider)
+	return service.NewRateService(logger, coingeckoProvider, coinMarketProvider)
 }
 
 func createFileIfNotExists(filePath string) {

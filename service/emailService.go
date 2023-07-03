@@ -9,19 +9,22 @@ import (
 
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
+	"github.com/sirupsen/logrus"
 )
 
 type EmailService struct {
 	EmailRepository repository.EmailRepository
 	RateService     RateService
 	APIClient       ApiClientBase
+	Logger          logrus.Logger
 }
 
-func NewEmailService(emailRepository repository.EmailRepository, rateService RateService, apiClient ApiClientBase) *EmailService {
+func NewEmailService(emailRepository repository.EmailRepository, rateService RateService, apiClient ApiClientBase, logger *logrus.Logger) *EmailService {
 	return &EmailService{
 		EmailRepository: emailRepository,
 		RateService:     rateService,
 		APIClient:       apiClient,
+		Logger:          *logger,
 	}
 }
 
@@ -48,7 +51,7 @@ func (r *EmailService) SendRateForSubscribeEmails(ctx context.Context, coin stri
 		if err != nil {
 			return err
 		}
-		fmt.Println(response.StatusCode)
+		r.Logger.Log(logrus.InfoLevel, response.StatusCode)
 	}
 
 	return nil

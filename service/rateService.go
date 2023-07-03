@@ -4,19 +4,23 @@ import (
 	"CurrencyRateApp/domain/model"
 	"context"
 	"fmt"
+
+	"github.com/sirupsen/logrus"
 )
 
 type RateService struct {
 	providers []RateProvider
+	logger    logrus.Logger
 }
 
 type RateProvider interface {
 	FetchExchangeRate(ctx context.Context, coins []string, currencies []string, precision uint) (model.Rate, error)
 }
 
-func NewRateService(providers ...RateProvider) *RateService {
+func NewRateService(logger *logrus.Logger, providers ...RateProvider) *RateService {
 	return &RateService{
 		providers: providers,
+		logger:    *logger,
 	}
 }
 
@@ -30,7 +34,7 @@ func (s *RateService) FetchExchangeRate(ctx context.Context, coins []string, cur
 			return rate, nil
 		}
 
-		fmt.Printf("Ошибка при получении курса: %v\n", err)
+		s.logger.WithError(err).Warn("Error in getting the rate:")
 	}
 
 	return model.Rate{}, fmt.Errorf("невозможно получить курс обмена от доступных провайдеров")

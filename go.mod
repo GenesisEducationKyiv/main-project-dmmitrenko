@@ -6,6 +6,7 @@ require github.com/google/wire v0.5.0
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/facebookgo/structtag v0.0.0-20150214074306-217e25fb9691 // indirect
 	github.com/stretchr/objx v0.5.0 // indirect
 )
 
@@ -16,6 +17,7 @@ require (
 	github.com/bytedance/sonic v1.9.1 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
+	github.com/facebookgo/inject v0.0.0-20180706035515-f23751cae28b
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/gin-gonic/gin v1.9.1 // indirect
