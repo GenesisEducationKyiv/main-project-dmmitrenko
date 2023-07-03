@@ -64,7 +64,7 @@ func InitializeEmailService(logger *logrus.Logger) *service.EmailService {
 
 	return &service.EmailService{
 		EmailRepository: *emailRepository,
-		RateService:     *rateService,
+		RateService:     rateService,
 		APIClient:       apiClient,
 	}
 }

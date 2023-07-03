@@ -14,17 +14,17 @@ import (
 
 type EmailService struct {
 	EmailRepository repository.EmailRepository
-	RateService     RateService
+	RateService     *RateService
 	APIClient       ApiClientBase
-	Logger          logrus.Logger
+	Logger          *logrus.Logger
 }
 
-func NewEmailService(emailRepository repository.EmailRepository, rateService RateService, apiClient ApiClientBase, logger *logrus.Logger) *EmailService {
+func NewEmailService(emailRepository repository.EmailRepository, rateService *RateService, apiClient ApiClientBase, logger *logrus.Logger) *EmailService {
 	return &EmailService{
 		EmailRepository: emailRepository,
 		RateService:     rateService,
 		APIClient:       apiClient,
-		Logger:          *logger,
+		Logger:          logger,
 	}
 }
 

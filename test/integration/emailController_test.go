@@ -72,7 +72,7 @@ func TestSubscribeEmailIntegration(t *testing.T) {
 		ApiClient:  apiClient,
 	}
 	rateService := service.NewRateService(logger, coingeckoProvider, coinMarketProvider)
-	emailService := service.NewEmailService(*emailRepository, *rateService, apiClient, logger)
+	emailService := service.NewEmailService(*emailRepository, rateService, apiClient, logger)
 
 	emailController := controller.NewEmailController(emailService)
 

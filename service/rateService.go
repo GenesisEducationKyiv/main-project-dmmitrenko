@@ -10,7 +10,7 @@ import (
 
 type RateService struct {
 	providers []RateProvider
-	logger    logrus.Logger
+	logger    *logrus.Logger
 }
 
 type RateProvider interface {
@@ -20,7 +20,7 @@ type RateProvider interface {
 func NewRateService(logger *logrus.Logger, providers ...RateProvider) *RateService {
 	return &RateService{
 		providers: providers,
-		logger:    *logger,
+		logger:    logger,
 	}
 }
 
