@@ -21,7 +21,7 @@ type CoinMarkerExchangeRateResponse struct {
 
 type CoinMarketProvider struct {
 	Automapper Mapper
-	ApiClient  ApiClientBase
+	ApiClient  *ApiClientBase
 }
 
 func (r *CoinMarketProvider) FetchExchangeRate(ctx context.Context, coins []string, currencies []string, precision uint) (model.Rate, error) {

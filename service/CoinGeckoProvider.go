@@ -22,7 +22,7 @@ type CoingeckoExchangeRateResponse struct {
 
 type CoingeckoProvider struct {
 	Automapper Mapper
-	ApiClient  ApiClientBase
+	ApiClient  *ApiClientBase
 }
 
 func (r *CoingeckoProvider) FetchExchangeRate(ctx context.Context, coins []string, currencies []string, precision uint) (model.Rate, error) {

@@ -9,8 +9,8 @@ import (
 )
 
 type RateService struct {
-	providers []RateProvider
-	logger    *logrus.Logger
+	Providers []RateProvider
+	Logger    *logrus.Logger
 }
 
 type RateProvider interface {
@@ -19,8 +19,8 @@ type RateProvider interface {
 
 func NewRateService(logger *logrus.Logger, providers ...RateProvider) *RateService {
 	return &RateService{
-		providers: providers,
-		logger:    logger,
+		Providers: providers,
+		Logger:    logger,
 	}
 }
 
@@ -28,13 +28,13 @@ func (s *RateService) FetchExchangeRate(ctx context.Context, coins []string, cur
 	var rate model.Rate
 	var err error
 
-	for _, provider := range s.providers {
+	for _, provider := range s.Providers {
 		rate, err = provider.FetchExchangeRate(ctx, coins, currencies, precision)
 		if err == nil {
 			return rate, nil
 		}
 
-		s.logger.WithError(err).Warn("Error in getting the rate:")
+		s.Logger.WithError(err).Warn("Error in getting the rate:")
 	}
 
 	return model.Rate{}, fmt.Errorf("невозможно получить курс обмена от доступных провайдеров")
