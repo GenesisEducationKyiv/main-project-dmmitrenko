@@ -30,10 +30,7 @@ func (w *mockWriter) Write(p []byte) (n int, err error) {
 
 func TestEmailRepository_AppendEmailToFile(t *testing.T) {
 	var buf bytes.Buffer
-	fileSettings := repository.FileOptions{
-		Path: "DB.txt",
-	}
-	emailRepo := repository.NewEmailRepository(&buf, &buf, fileSettings)
+	emailRepo := repository.NewEmailRepository(&buf, &buf)
 
 	existingEmail := "existing@example.com"
 	newEmail := "new@example.com"
@@ -48,14 +45,11 @@ func TestEmailRepository_AppendEmailToFile(t *testing.T) {
 }
 
 func TestEmailRepository_GetAllEmails(t *testing.T) {
-	fileSettings := repository.FileOptions{
-		Path: "DB.txt",
-	}
 	existingEmails := []string{"test1@example.com", "test2@example.com"}
 
 	reader := &mockReader{data: []byte(strings.Join(existingEmails, "\n"))}
 
-	repo := repository.NewEmailRepository(nil, reader, fileSettings)
+	repo := repository.NewEmailRepository(nil, reader)
 
 	emails, err := repo.GetAllEmails()
 
@@ -64,9 +58,6 @@ func TestEmailRepository_GetAllEmails(t *testing.T) {
 }
 
 func TestEmailRepository_AppendEmailToFile_EmailAlreadyExists(t *testing.T) {
-	fileSettings := repository.FileOptions{
-		Path: "DB.txt",
-	}
 	existingEmails := []string{"test1@example.com", "test2@example.com"}
 	existingEmail := existingEmails[0]
 
@@ -74,7 +65,7 @@ func TestEmailRepository_AppendEmailToFile_EmailAlreadyExists(t *testing.T) {
 
 	reader := &mockReader{data: []byte(strings.Join(existingEmails, "\n"))}
 
-	repo := repository.NewEmailRepository(writer, reader, fileSettings)
+	repo := repository.NewEmailRepository(writer, reader)
 
 	err := repo.AppendEmailToFile(existingEmail)
 

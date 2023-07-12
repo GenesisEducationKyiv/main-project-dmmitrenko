@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"CurrencyRateApp/domain/model"
 	"CurrencyRateApp/service"
 	"context"
 	"net/http"
@@ -12,13 +11,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type stubRateService struct{}
+type mockRateService struct{}
 
-func (m *stubRateService) FetchExchangeRate(ctx context.Context, options service.ExchangeRateOptions) (model.Rate, error) {
-	return model.Rate{
+func (m *mockRateService) FetchExchangeRate(ctx context.Context, coins []string, currencies []string, precision uint) (service.ExchangeRateResponse, error) {
+	return service.ExchangeRateResponse{
 		Rates: map[string]map[string]float64{
-			"BTC": {
-				"UAH": 450000.0,
+			"bitcoin": {
+				"uah": 450000.0,
 			},
 		},
 	}, nil
@@ -28,7 +27,7 @@ func TestGetBitcoinToUahExchangeRate(t *testing.T) {
 	// Arrange
 	router := gin.Default()
 
-	rateService := &stubRateService{}
+	rateService := &mockRateService{}
 
 	rateController := NewRateController(rateService)
 

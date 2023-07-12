@@ -15,7 +15,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
-	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -51,27 +50,6 @@ func TestSubscribeEmailIntegration(t *testing.T) {
 	filePath := tempFile.Name()
 	defer os.Remove(filePath)
 
-	fileSettings := repository.FileOptions{
-		Path: filePath,
-	}
-
-	coinMarketSettings := service.CoinMarketOptions{
-		ApiKey:              "8f5685ff-4148-40ad-8d88-21d3e5b8d068",
-		Host:                "https://pro-api.coinmarketcap.com/",
-		GetExchangeEndpoint: "v1/cryptocurrency/quotes/latest",
-	}
-
-	senderSettings := service.SenderOptions{
-		Nickname:    "serhii",
-		EmailSender: "emailSender",
-		ApiKey:      "APIKEY",
-	}
-
-	coingeckoSettings := service.CoingeckoOptions{
-		Host:                "https://api.coingecko.com/",
-		GetExchangeEndpoint: "api/v3/simple/price",
-	}
-
 	writer, err := os.OpenFile(filePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
 		t.Fatal(err)
@@ -81,14 +59,10 @@ func TestSubscribeEmailIntegration(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	logger := logrus.New()
-	emailRepository := repository.NewEmailRepository(writer, reader, fileSettings)
-	apiClient := service.NewAPIClient(logger)
-	coinMarketProvider := service.NewCoinMarketProvider(apiClient, coinMarketSettings)
-	coingeckoProvider := service.NewCoingeckoProvider(apiClient, coingeckoSettings)
-
-	rateService := service.NewRateService(logger, coingeckoProvider, coinMarketProvider)
-	emailService := service.NewEmailService(*emailRepository, rateService, *apiClient, logger, senderSettings)
+	emailRepository := repository.NewEmailRepository(writer, reader)
+	apiClient := service.NewAPIClient()
+	rateService := service.NewRateService(apiClient)
+	emailService := service.NewEmailService(*emailRepository, *rateService, apiClient)
 
 	emailController := controller.NewEmailController(emailService)
 
