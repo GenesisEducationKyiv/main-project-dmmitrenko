@@ -34,7 +34,13 @@ func (r *RateController) GetBitcoinToUahExchangeRate(c *gin.Context) {
 	currencies := []string{constants.UAH}
 	precision := 2
 
-	rates, err := r.rateService.FetchExchangeRate(c, coins, currencies, uint(precision))
+	var options = service.ExchangeRateOptions{
+		Coins:      coins,
+		Currencies: currencies,
+		Precision:  uint(precision),
+	}
+
+	rates, err := r.rateService.FetchExchangeRate(c, options)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -61,15 +67,19 @@ func (r *RateController) GetCoinExchangeRate(c *gin.Context) {
 	currencies := c.PostForm("currencies")
 	precisionStr := c.PostForm("precision")
 
-	coinList := strings.Split(coins, ",")
-	currencyList := strings.Split(currencies, ",")
 	precision, err := strconv.ParseUint(precisionStr, 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	rates, err := r.rateService.FetchExchangeRate(c, coinList, currencyList, uint(precision))
+	var options = service.ExchangeRateOptions{
+		Coins:      strings.Split(coins, ","),
+		Currencies: strings.Split(currencies, ","),
+		Precision:  uint(precision),
+	}
+
+	rates, err := r.rateService.FetchExchangeRate(c, options)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

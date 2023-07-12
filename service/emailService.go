@@ -38,7 +38,13 @@ func (r *EmailService) SendRateForSubscribeEmails(ctx context.Context, coin stri
 		return err
 	}
 
-	rates, err := r.RateService.FetchExchangeRate(ctx, []string{coin}, []string{currency}, 2)
+	var options = ExchangeRateOptions{
+		Coins:      []string{coin},
+		Currencies: []string{currency},
+		Precision:  2,
+	}
+
+	rates, err := r.RateService.FetchExchangeRate(ctx, options)
 	if err != nil {
 		return err
 	}

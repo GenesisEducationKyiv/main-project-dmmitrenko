@@ -25,13 +25,13 @@ type CoingeckoProvider struct {
 	ApiClient  *ApiClientBase
 }
 
-func (r *CoingeckoProvider) FetchExchangeRate(ctx context.Context, coins []string, currencies []string, precision uint) (model.Rate, error) {
+func (r *CoingeckoProvider) FetchExchangeRate(ctx context.Context, options ExchangeRateOptions) (model.Rate, error) {
 	url := constants.API_BASE_URL + constants.SIMPLE_PRICE_ENDPOINT
 
 	queryParams := map[string]string{
-		coinParameters:     strings.Join(coins, ","),
-		currencyParameters: strings.Join(currencies, ","),
-		currencyPrecision:  strconv.Itoa(int(precision)),
+		coinParameters:     strings.Join(options.Coins, ","),
+		currencyParameters: strings.Join(options.Currencies, ","),
+		currencyPrecision:  strconv.Itoa(int(options.Precision)),
 	}
 
 	resp, err := r.ApiClient.MakeAPIRequest(ctx, url, queryParams, nil)

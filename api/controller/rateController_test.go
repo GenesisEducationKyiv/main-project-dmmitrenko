@@ -2,6 +2,7 @@ package controller
 
 import (
 	"CurrencyRateApp/domain/model"
+	"CurrencyRateApp/service"
 	"context"
 	"net/http"
 	"net/http/httptest"
@@ -13,7 +14,7 @@ import (
 
 type mockRateService struct{}
 
-func (m *mockRateService) FetchExchangeRate(ctx context.Context, coins []string, currencies []string, precision uint) (model.Rate, error) {
+func (m *mockRateService) FetchExchangeRate(ctx context.Context, options service.ExchangeRateOptions) (model.Rate, error) {
 	return model.Rate{
 		Rates: map[string]float64{
 			"BTC/UAH": 450000.0,

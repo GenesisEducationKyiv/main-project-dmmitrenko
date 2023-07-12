@@ -24,13 +24,13 @@ type CoinMarketProvider struct {
 	ApiClient  *ApiClientBase
 }
 
-func (r *CoinMarketProvider) FetchExchangeRate(ctx context.Context, coins []string, currencies []string, precision uint) (model.Rate, error) {
+func (r *CoinMarketProvider) FetchExchangeRate(ctx context.Context, options ExchangeRateOptions) (model.Rate, error) {
 	apiKey := "8f5685ff-4148-40ad-8d88-21d3e5b8d068"
 
 	url := coinMarketCapAPIURL
 
-	normalizedCoins := make([]string, len(coins))
-	for i, coin := range coins {
+	normalizedCoins := make([]string, len(options.Coins))
+	for i, coin := range options.Coins {
 		normalizedCoins[i] = model.NormalizeCurrency(strings.ToLower(coin))
 	}
 
@@ -40,7 +40,7 @@ func (r *CoinMarketProvider) FetchExchangeRate(ctx context.Context, coins []stri
 
 	queryParams := map[string]string{
 		"symbol":  strings.Join(normalizedCoins, ","),
-		"convert": strings.Join(currencies, ","),
+		"convert": strings.Join(options.Currencies, ","),
 	}
 
 	resp, err := r.ApiClient.MakeAPIRequest(ctx, url, queryParams, headers)

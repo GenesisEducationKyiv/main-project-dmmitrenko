@@ -13,8 +13,14 @@ type RateService struct {
 	Logger    *logrus.Logger
 }
 
+type ExchangeRateOptions struct {
+	Coins      []string
+	Currencies []string
+	Precision  uint
+}
+
 type RateProvider interface {
-	FetchExchangeRate(ctx context.Context, coins []string, currencies []string, precision uint) (model.Rate, error)
+	FetchExchangeRate(ctx context.Context, options ExchangeRateOptions) (model.Rate, error)
 }
 
 func NewRateService(logger *logrus.Logger, providers ...RateProvider) *RateService {
@@ -24,12 +30,12 @@ func NewRateService(logger *logrus.Logger, providers ...RateProvider) *RateServi
 	}
 }
 
-func (s *RateService) FetchExchangeRate(ctx context.Context, coins []string, currencies []string, precision uint) (model.Rate, error) {
+func (s *RateService) FetchExchangeRate(ctx context.Context, options ExchangeRateOptions) (model.Rate, error) {
 	var rate model.Rate
 	var err error
 
 	for _, provider := range s.Providers {
-		rate, err = provider.FetchExchangeRate(ctx, coins, currencies, precision)
+		rate, err = provider.FetchExchangeRate(ctx, options)
 		if err == nil {
 			return rate, nil
 		}
@@ -37,5 +43,5 @@ func (s *RateService) FetchExchangeRate(ctx context.Context, coins []string, cur
 		s.Logger.WithError(err).Warn("Error in getting the rate:")
 	}
 
-	return model.Rate{}, fmt.Errorf("невозможно получить курс обмена от доступных провайдеров")
+	return model.Rate{}, fmt.Errorf("it is impossible to get exchange rates from available providers")
 }
