@@ -12,9 +12,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type mockRateService struct{}
+type stubRateService struct{}
 
-func (m *mockRateService) FetchExchangeRate(ctx context.Context, options service.ExchangeRateOptions) (model.Rate, error) {
+func (m *stubRateService) FetchExchangeRate(ctx context.Context, options service.ExchangeRateOptions) (model.Rate, error) {
 	return model.Rate{
 		Rates: map[string]map[string]float64{
 			"BTC": {
@@ -28,7 +28,7 @@ func TestGetBitcoinToUahExchangeRate(t *testing.T) {
 	// Arrange
 	router := gin.Default()
 
-	rateService := &mockRateService{}
+	rateService := &stubRateService{}
 
 	rateController := NewRateController(rateService)
 

@@ -40,7 +40,7 @@ func (s *RateService) FetchExchangeRate(ctx context.Context, options ExchangeRat
 			return rate, nil
 		}
 
-		s.Logger.WithError(err).Warn("Error in getting the rate:")
+		s.Logger.WithError(err).Warn("error in getting the rate:")
 	}
 
 	return model.Rate{}, fmt.Errorf("it is impossible to get exchange rates from available providers")
