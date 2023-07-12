@@ -22,14 +22,12 @@ type CoinMarkerExchangeRateResponse struct {
 }
 
 type CoinMarketProvider struct {
-	automapper         Mapper
 	apiClient          APIClient
 	coinMarketSettings CoinMarketOptions
 }
 
-func NewCoinMarketProvider(automapper Mapper, apiClient APIClient, coinMarketSettings CoinMarketOptions) *CoinMarketProvider {
+func NewCoinMarketProvider(apiClient APIClient, coinMarketSettings CoinMarketOptions) *CoinMarketProvider {
 	return &CoinMarketProvider{
-		automapper:         automapper,
 		apiClient:          apiClient,
 		coinMarketSettings: coinMarketSettings,
 	}
@@ -66,8 +64,12 @@ func (r *CoinMarketProvider) FetchExchangeRate(ctx context.Context, options Exch
 	}
 
 	var rate model.Rate
-	r.automapper = &CoinMarkerExchangeRateResponseMapper{}
-	rate, err = r.automapper.MapToRate(exchangeRateResponse)
+
+	for currency, quote := range exchangeRateResponse.Data {
+		for targetCurrency, price := range quote.Quote {
+			rate.Rates[currency][targetCurrency] = price.Price
+		}
+	}
 
 	return rate, err
 }

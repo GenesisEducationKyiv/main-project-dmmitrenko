@@ -39,14 +39,11 @@ func (c *ApiClientBase) MakeAPIRequest(ctx context.Context, url string, queryPar
 		request.Header.Add(key, value)
 	}
 
-	// TODO: Requires investigation.for some unknown reason, logger is injected with nil.
-	// if c.Logger != nil {
-	// 	c.Logger.WithFields(logrus.Fields{
-	// 		"requestURL":     request.URL.String(),
-	// 		"requestMethod":  request.Method,
-	// 		"requestHeaders": request.Header,
-	// 	}).Info("Making API request")
-	// }
+	c.Logger.WithFields(logrus.Fields{
+		"requestURL":     request.URL.String(),
+		"requestMethod":  request.Method,
+		"requestHeaders": request.Header,
+	}).Info("Making API request")
 
 	client := &http.Client{}
 	resp, err := client.Do(request)
@@ -54,12 +51,10 @@ func (c *ApiClientBase) MakeAPIRequest(ctx context.Context, url string, queryPar
 		return nil, err
 	}
 
-	// if c.Logger != nil {
-	// 	c.Logger.WithFields(logrus.Fields{
-	// 		"responseStatusCode": resp.StatusCode,
-	// 		"responseHeaders":    resp.Header,
-	// 	}).Info("Received API response")
-	// }
+	c.Logger.WithFields(logrus.Fields{
+		"responseStatusCode": resp.StatusCode,
+		"responseHeaders":    resp.Header,
+	}).Info("Received API response")
 
 	return resp, nil
 }

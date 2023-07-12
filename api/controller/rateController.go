@@ -46,7 +46,7 @@ func (r *RateController) GetBitcoinToUahExchangeRate(c *gin.Context) {
 		return
 	}
 
-	exchangeRate := rates.Rates["BTC/UAH"]
+	exchangeRate := rates.Rates["bitcoin"]["uah"]
 	c.JSON(http.StatusOK, exchangeRate)
 }
 
