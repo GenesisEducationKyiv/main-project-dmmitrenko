@@ -63,14 +63,9 @@ func TestSubscribeEmailIntegration(t *testing.T) {
 	logger := logrus.New()
 	emailRepository := repository.NewEmailRepository(writer, reader)
 	apiClient := service.NewAPIClient(logger)
-	coinMarketProvider := &service.CoinMarketProvider{
-		Automapper: &service.CoinMarkerExchangeRateResponseMapper{},
-		ApiClient:  apiClient,
-	}
-	coingeckoProvider := &service.CoingeckoProvider{
-		Automapper: &service.CoingeckoExchangeRateResponseMapper{},
-		ApiClient:  apiClient,
-	}
+	coinMarketProvider := service.NewCoinMarketProvider(&service.CoinMarkerExchangeRateResponseMapper{}, apiClient)
+	coingeckoProvider := service.NewCoingeckoProvider(&service.CoingeckoExchangeRateResponseMapper{}, apiClient)
+
 	rateService := service.NewRateService(logger, coingeckoProvider, coinMarketProvider)
 	emailService := service.NewEmailService(*emailRepository, rateService, *apiClient, logger)
 

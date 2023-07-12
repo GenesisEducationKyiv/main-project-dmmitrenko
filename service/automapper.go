@@ -21,20 +21,16 @@ func (m *CoinMarkerExchangeRateResponseMapper) MapToRate(input interface{}) (mod
 		return model.Rate{}, errors.New("invalid input type")
 	}
 
-	rates := m.flattenCoinMarkerExchangeRateResponse(response.Data)
+	rates := m.flattenCoinMarkerExchangeRateResponse(response)
 
 	return model.Rate{
 		Rates: rates,
 	}, nil
 }
 
-func (m *CoinMarkerExchangeRateResponseMapper) flattenCoinMarkerExchangeRateResponse(data map[string]struct {
-	Quote map[string]struct {
-		Price float64 `json:"price"`
-	} `json:"quote"`
-}) map[string]float64 {
+func (m *CoinMarkerExchangeRateResponseMapper) flattenCoinMarkerExchangeRateResponse(response CoinMarkerExchangeRateResponse) map[string]float64 {
 	flattenedRates := make(map[string]float64)
-	for currency, quote := range data {
+	for currency, quote := range response.Data {
 		for targetCurrency, rate := range quote.Quote {
 			key := currency + "/" + targetCurrency
 			flattenedRates[key] = rate.Price
@@ -51,16 +47,16 @@ func (m *CoingeckoExchangeRateResponseMapper) MapToRate(input interface{}) (mode
 		return model.Rate{}, errors.New("invalid input type")
 	}
 
-	rates := m.flattenCoingeckoExchangeRateResponse(response.Rates)
+	rates := m.flattenCoingeckoExchangeRateResponse(response)
 
 	return model.Rate{
 		Rates: rates,
 	}, nil
 }
 
-func (m *CoingeckoExchangeRateResponseMapper) flattenCoingeckoExchangeRateResponse(rates map[string]map[string]float64) map[string]float64 {
+func (m *CoingeckoExchangeRateResponseMapper) flattenCoingeckoExchangeRateResponse(response CoingeckoExchangeRateResponse) map[string]float64 {
 	flattenedRates := make(map[string]float64)
-	for currency, rateMap := range rates {
+	for currency, rateMap := range response.Rates {
 		for targetCurrency, rate := range rateMap {
 			normalizedCurrency := model.NormalizeCurrency(strings.ToLower(currency))
 			key := normalizedCurrency + "/" + strings.ToUpper(targetCurrency)

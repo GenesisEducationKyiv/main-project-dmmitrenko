@@ -66,18 +66,12 @@ func NewAPIClient(logger *logrus.Logger) *service.ApiClientBase {
 	}
 }
 
-func NewCoinMarketProvider(apiClient *service.ApiClientBase) *service.CoinMarketProvider {
-	return &service.CoinMarketProvider{
-		Automapper: &service.CoinMarkerExchangeRateResponseMapper{},
-		ApiClient:  apiClient,
-	}
+func NewCoinMarketProvider(apiClient *service.ApiClientBase, automapper service.Mapper) *service.CoinMarketProvider {
+	return service.NewCoinMarketProvider(automapper, apiClient)
 }
 
-func NewCoingeckoProvider(apiClient *service.ApiClientBase) *service.CoingeckoProvider {
-	return &service.CoingeckoProvider{
-		Automapper: &service.CoingeckoExchangeRateResponseMapper{},
-		ApiClient:  apiClient,
-	}
+func NewCoingeckoProvider(apiClient *service.ApiClientBase, automapper service.Mapper) *service.CoingeckoProvider {
+	return service.NewCoingeckoProvider(automapper, apiClient)
 }
 
 func RateProviderSlice() []service.RateProvider {

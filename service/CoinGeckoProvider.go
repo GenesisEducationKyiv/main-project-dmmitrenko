@@ -21,8 +21,15 @@ type CoingeckoExchangeRateResponse struct {
 }
 
 type CoingeckoProvider struct {
-	Automapper Mapper
-	ApiClient  *ApiClientBase
+	automapper Mapper
+	apiClient  APIClient
+}
+
+func NewCoingeckoProvider(automapper Mapper, apiClient APIClient) *CoingeckoProvider {
+	return &CoingeckoProvider{
+		automapper: automapper,
+		apiClient:  apiClient,
+	}
 }
 
 func (r *CoingeckoProvider) FetchExchangeRate(ctx context.Context, options ExchangeRateOptions) (model.Rate, error) {
@@ -34,7 +41,7 @@ func (r *CoingeckoProvider) FetchExchangeRate(ctx context.Context, options Excha
 		currencyPrecision:  strconv.Itoa(int(options.Precision)),
 	}
 
-	resp, err := r.ApiClient.MakeAPIRequest(ctx, url, queryParams, nil)
+	resp, err := r.apiClient.MakeAPIRequest(ctx, url, queryParams, nil)
 	if err != nil {
 		return model.Rate{}, err
 	}
@@ -52,7 +59,7 @@ func (r *CoingeckoProvider) FetchExchangeRate(ctx context.Context, options Excha
 	}
 
 	var rate model.Rate
-	rate, err = r.Automapper.MapToRate(exchangeRates)
+	rate, err = r.automapper.MapToRate(exchangeRates)
 	if err != nil {
 		return model.Rate{}, err
 	}
