@@ -1,1 +1,45 @@
-[![Open in Visual Studio Code](https://classroom.github.com/assets/open-in-vscode-718a45dd9cf7e7f842a935f5ebbe5719a5e09af4491e668f4dbf3b35d5cca122.svg)](https://classroom.github.com/online_ide?assignment_repo_id=11353315&assignment_repo_type=AssignmentRepo)
+# CurrencyRateApp
+### File tree
+``` powershell
+├── .gitignore
+├── Dockerfile
+├── go.mod
+├── go.sum
+├── README.md
+├── api/
+│   ├── controller/
+│   │   ├── emailController.go
+│   │   └── rateController.go
+│   ├── docs/
+│   │   ├── docs.go
+│   │   ├── swagger.json
+│   │   └── swagger.yaml
+│   ├── middleware/
+│   │   └── exceptionMiddleware.go
+│   └── route/
+│       └── route.go
+├── cmd/
+│   └── main.go
+├── domain/
+│   └── constants.go
+├── domain/
+│   └── model/
+│       └── Rate.go
+├── repository/
+│   └── emailRepository.go
+└── service/
+    ├── apiClient.go
+    ├── emailService.go
+    └── rateService.go
+```
+
+### API launch
+
+- Build a Docker image with the appropriate settings. 
+```docker
+docker build -t <your-image-name> .
+```
+- Run the container based on the built image.
+```docker
+docker run -p <your port>:8080 --env-file .env --env APIKEY=<API key for sending messages> <your-image-name>
+```
