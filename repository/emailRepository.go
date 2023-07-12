@@ -6,15 +6,21 @@ import (
 	"strings"
 )
 
-type EmailRepository struct {
-	writer io.Writer
-	reader io.Reader
+type FileOptions struct {
+	Path string `json:"Path"`
 }
 
-func NewEmailRepository(writer io.Writer, reader io.Reader) *EmailRepository {
+type EmailRepository struct {
+	writer       io.Writer
+	reader       io.Reader
+	fileSettings FileOptions
+}
+
+func NewEmailRepository(writer io.Writer, reader io.Reader, fileSettings FileOptions) *EmailRepository {
 	return &EmailRepository{
-		writer: writer,
-		reader: reader,
+		writer:       writer,
+		reader:       reader,
+		fileSettings: fileSettings,
 	}
 }
 

@@ -1,12 +1,8 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "API documentation for GSES2 BTC application",
-        "title": "GSES2 BTC application",
-        "contact": {},
-        "version": "1.0"
+        "contact": {}
     },
-    "basePath": "/",
     "paths": {
         "/email": {
             "post": {
@@ -59,6 +55,50 @@
                         "schema": {
                             "type": "number"
                         }
+                    }
+                }
+            },
+            "post": {
+                "description": "Returns the current exchange rate for a crypto coin",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rate"
+                ],
+                "summary": "Get the exchange rate for a crypto coin",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Comma-separated list of crypto coins",
+                        "name": "coins",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Comma-separated list of currencies",
+                        "name": "currencies",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Precision of the exchange rate",
+                        "name": "precision",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
                     }
                 }
             }

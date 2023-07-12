@@ -1,64 +1,47 @@
 package service
 
 import (
-	constants "CurrencyRateApp/domain"
+	"CurrencyRateApp/domain/model"
 	"context"
-	"encoding/json"
-	"io"
-	"net/http"
-	"strconv"
-	"strings"
+	"fmt"
+
+	"github.com/sirupsen/logrus"
 )
 
 type RateService struct {
-	APIClient APIClient
+	Providers []RateProvider
+	Logger    *logrus.Logger
 }
 
-type ApiClient interface {
-	MakeAPIRequest(ctx context.Context, url string, queryParams map[string]string) (*http.Response, error)
+type ExchangeRateOptions struct {
+	Coins      []string
+	Currencies []string
+	Precision  uint
 }
 
-func NewRateService(apiClient APIClient) *RateService {
+type RateProvider interface {
+	FetchExchangeRate(ctx context.Context, options ExchangeRateOptions) (model.Rate, error)
+}
+
+func NewRateService(logger *logrus.Logger, providers ...RateProvider) *RateService {
 	return &RateService{
-		APIClient: apiClient,
+		Providers: providers,
+		Logger:    logger,
 	}
 }
 
-const (
-	coinParameters     = "ids"
-	currencyParameters = "vs_currencies"
-	currencyPrecision  = "precision"
-)
+func (s *RateService) FetchExchangeRate(ctx context.Context, options ExchangeRateOptions) (model.Rate, error) {
+	var rate model.Rate
+	var err error
 
-type ExchangeRateResponse struct {
-	Rates map[string]map[string]float64 `json:"rates"`
-}
+	for _, provider := range s.Providers {
+		rate, err = provider.FetchExchangeRate(ctx, options)
+		if err == nil {
+			return rate, nil
+		}
 
-func (r *RateService) FetchExchangeRate(ctx context.Context, coins []string, currencies []string, precision uint) (ExchangeRateResponse, error) {
-	url := constants.API_BASE_URL + constants.SIMPLE_PRICE_ENDPOINT
-
-	queryParams := map[string]string{
-		coinParameters:     strings.Join(coins, ","),
-		currencyParameters: strings.Join(currencies, ","),
-		currencyPrecision:  strconv.Itoa(int(precision)),
+		s.Logger.WithError(err).Warn("error in getting the rate:")
 	}
 
-	resp, err := r.APIClient.MakeAPIRequest(ctx, url, queryParams)
-	if err != nil {
-		return ExchangeRateResponse{}, err
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return ExchangeRateResponse{}, err
-	}
-
-	var exchangeRates ExchangeRateResponse
-	err = json.Unmarshal(body, &exchangeRates.Rates)
-	if err != nil {
-		return ExchangeRateResponse{}, err
-	}
-
-	return exchangeRates, nil
+	return model.Rate{}, fmt.Errorf("it is impossible to get exchange rates from available providers")
 }
