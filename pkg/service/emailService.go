@@ -1,7 +1,8 @@
 package service
 
 import (
-	"CurrencyRateApp/repository"
+	"CurrencyRateApp/pkg/external"
+	"CurrencyRateApp/pkg/repository"
 	"context"
 	"fmt"
 
@@ -19,7 +20,7 @@ type SenderOptions struct {
 type EmailService struct {
 	emailRepository repository.EmailRepository
 	rateService     *RateService
-	apiClient       ApiClientBase
+	apiClient       external.ApiClientBase
 	logger          *logrus.Logger
 	senderSettings  SenderOptions
 }
@@ -27,7 +28,7 @@ type EmailService struct {
 func NewEmailService(
 	emailRepository repository.EmailRepository,
 	rateService *RateService,
-	apiClient ApiClientBase,
+	apiClient external.ApiClientBase,
 	logger *logrus.Logger,
 	senderSettings SenderOptions) *EmailService {
 	return &EmailService{
@@ -49,7 +50,7 @@ func (r *EmailService) SendRateForSubscribeEmails(ctx context.Context, coin stri
 		return err
 	}
 
-	var options = ExchangeRateOptions{
+	var options = external.ExchangeRateOptions{
 		Coins:      []string{coin},
 		Currencies: []string{currency},
 		Precision:  2,

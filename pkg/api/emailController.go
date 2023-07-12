@@ -1,7 +1,7 @@
-package controller
+package api
 
 import (
-	constants "CurrencyRateApp/domain"
+	"CurrencyRateApp/internal/helper"
 	"context"
 	"net/http"
 	"regexp"
@@ -63,7 +63,7 @@ func (r *EmailController) SubscribeEmail(c *gin.Context) {
 // @Router /subscribe [post]
 func (r *EmailController) SendEmails(c *gin.Context) {
 
-	err := r.emailService.SendRateForSubscribeEmails(c, constants.BITCOIN, constants.UAH)
+	err := r.emailService.SendRateForSubscribeEmails(c, helper.BITCOIN, helper.UAH)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

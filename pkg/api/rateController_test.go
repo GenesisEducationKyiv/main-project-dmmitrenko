@@ -1,8 +1,8 @@
-package controller
+package api
 
 import (
-	"CurrencyRateApp/domain/model"
-	"CurrencyRateApp/service"
+	"CurrencyRateApp/internal/model"
+	"CurrencyRateApp/pkg/external"
 	"context"
 	"net/http"
 	"net/http/httptest"
@@ -14,7 +14,7 @@ import (
 
 type stubRateService struct{}
 
-func (m *stubRateService) FetchExchangeRate(ctx context.Context, options service.ExchangeRateOptions) (model.Rate, error) {
+func (m *stubRateService) FetchExchangeRate(ctx context.Context, options external.ExchangeRateOptions) (model.Rate, error) {
 	return model.Rate{
 		Rates: map[string]map[string]float64{
 			"BTC": {

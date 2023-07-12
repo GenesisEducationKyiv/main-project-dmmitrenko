@@ -1,7 +1,8 @@
-package service
+package external
 
 import (
-	"CurrencyRateApp/domain/model"
+	"CurrencyRateApp/internal/model"
+
 	"context"
 	"encoding/json"
 	"io"

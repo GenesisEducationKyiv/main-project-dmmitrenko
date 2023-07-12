@@ -1,8 +1,8 @@
 package e2e
 
 import (
-	"CurrencyRateApp/api/controller"
-	"CurrencyRateApp/service"
+	"CurrencyRateApp/pkg/api"
+	"CurrencyRateApp/pkg/service"
 	"bytes"
 	"log"
 
@@ -26,7 +26,7 @@ func TestSubscribeEmail(t *testing.T) {
 	setEnvFilePath(t, filePath)
 
 	emailService := &service.EmailService{}
-	emailController := controller.NewEmailController(emailService)
+	emailController := api.NewEmailController(emailService)
 
 	gin.SetMode(gin.TestMode)
 	router := gin.Default()
@@ -65,7 +65,7 @@ func TestSendEmails(t *testing.T) {
 	setEnvFilePath(t, filePath)
 
 	emailService := &service.EmailService{}
-	emailController := controller.NewEmailController(emailService)
+	emailController := api.NewEmailController(emailService)
 
 	gin.SetMode(gin.TestMode)
 	router := gin.Default()
