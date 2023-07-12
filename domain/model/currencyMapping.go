@@ -12,3 +12,11 @@ func NormalizeCurrency(currency string) string {
 	}
 	return currency
 }
+
+func GetAvailableCoins() []string {
+	availableCoins := make([]string, 0, len(currencyMapping))
+	for coin := range currencyMapping {
+		availableCoins = append(availableCoins, coin)
+	}
+	return availableCoins
+}

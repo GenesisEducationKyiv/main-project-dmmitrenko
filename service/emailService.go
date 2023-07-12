@@ -60,7 +60,7 @@ func (r *EmailService) SendRateForSubscribeEmails(ctx context.Context, coin stri
 		return err
 	}
 
-	emailsToSend := r.CreateLetters(coin, currency, fmt.Sprintf("%b", rates.Rates[""]), emails)
+	emailsToSend := r.CreateLetters(coin, currency, fmt.Sprintf("%v", rates.Rates[""]), emails)
 	client := sendgrid.NewSendClient(r.senderSettings.ApiKey)
 
 	for _, emailToSend := range emailsToSend {

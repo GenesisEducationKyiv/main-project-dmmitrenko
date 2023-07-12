@@ -2,7 +2,7 @@ package controller
 
 import (
 	constants "CurrencyRateApp/domain"
-	_ "CurrencyRateApp/domain/model"
+	"CurrencyRateApp/domain/model"
 	"CurrencyRateApp/service"
 	"net/http"
 	"strconv"
@@ -67,6 +67,13 @@ func (r *RateController) GetCoinExchangeRate(c *gin.Context) {
 	currencies := c.PostForm("currencies")
 	precisionStr := c.PostForm("precision")
 
+	availableCoins := model.GetAvailableCoins()
+
+	if !validateInput(coins, availableCoins) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid coins selected."})
+		return
+	}
+
 	precision, err := strconv.ParseUint(precisionStr, 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -86,4 +93,23 @@ func (r *RateController) GetCoinExchangeRate(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, rates)
+}
+
+func validateInput(coins string, allowedValues []string) bool {
+	values := strings.Split(coins, ",")
+	for _, v := range values {
+		if !contains(allowedValues, v) {
+			return false
+		}
+	}
+	return true
+}
+
+func contains(slice []string, item string) bool {
+	for _, s := range slice {
+		if s == item {
+			return true
+		}
+	}
+	return false
 }
