@@ -7,9 +7,11 @@ import (
 	"strings"
 )
 
-const (
-	coinMarketCapAPIURL = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest"
-)
+type CoinMarketOptions struct {
+	ApiKey              string `json:"ApiKey"`
+	Host                string `json:"Host"`
+	GetExchangeEndpoint string `json:"GetExchangeEndpoint"`
+}
 
 type CoinMarkerExchangeRateResponse struct {
 	Data map[string]struct {
@@ -20,21 +22,23 @@ type CoinMarkerExchangeRateResponse struct {
 }
 
 type CoinMarketProvider struct {
-	automapper Mapper
-	apiClient  APIClient
+	automapper         Mapper
+	apiClient          APIClient
+	coinMarketSettings CoinMarketOptions
 }
 
-func NewCoinMarketProvider(automapper Mapper, apiClient APIClient) *CoinMarketProvider {
+func NewCoinMarketProvider(automapper Mapper, apiClient APIClient, coinMarketSettings CoinMarketOptions) *CoinMarketProvider {
 	return &CoinMarketProvider{
-		automapper: automapper,
-		apiClient:  apiClient,
+		automapper:         automapper,
+		apiClient:          apiClient,
+		coinMarketSettings: coinMarketSettings,
 	}
 }
 
 func (r *CoinMarketProvider) FetchExchangeRate(ctx context.Context, options ExchangeRateOptions) (model.Rate, error) {
-	apiKey := "8f5685ff-4148-40ad-8d88-21d3e5b8d068"
+	apiKey := r.coinMarketSettings.ApiKey
 
-	url := coinMarketCapAPIURL
+	url := r.coinMarketSettings.Host + r.coinMarketSettings.GetExchangeEndpoint
 
 	normalizedCoins := make([]string, len(options.Coins))
 	for i, coin := range options.Coins {

@@ -51,6 +51,27 @@ func TestSubscribeEmailIntegration(t *testing.T) {
 	filePath := tempFile.Name()
 	defer os.Remove(filePath)
 
+	fileSettings := repository.FileOptions{
+		Path: filePath,
+	}
+
+	coinMarketSettings := service.CoinMarketOptions{
+		ApiKey:              "8f5685ff-4148-40ad-8d88-21d3e5b8d068",
+		Host:                "https://pro-api.coinmarketcap.com/",
+		GetExchangeEndpoint: "v1/cryptocurrency/quotes/latest",
+	}
+
+	senderSettings := service.SenderOptions{
+		Nickname:    "serhii",
+		EmailSender: "emailSender",
+		ApiKey:      "APIKEY",
+	}
+
+	coingeckoSettings := service.CoingeckoOptions{
+		Host:                "https://api.coingecko.com/",
+		GetExchangeEndpoint: "api/v3/simple/price",
+	}
+
 	writer, err := os.OpenFile(filePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
 		t.Fatal(err)
@@ -61,13 +82,13 @@ func TestSubscribeEmailIntegration(t *testing.T) {
 	}
 
 	logger := logrus.New()
-	emailRepository := repository.NewEmailRepository(writer, reader)
+	emailRepository := repository.NewEmailRepository(writer, reader, fileSettings)
 	apiClient := service.NewAPIClient(logger)
-	coinMarketProvider := service.NewCoinMarketProvider(&service.CoinMarkerExchangeRateResponseMapper{}, apiClient)
-	coingeckoProvider := service.NewCoingeckoProvider(&service.CoingeckoExchangeRateResponseMapper{}, apiClient)
+	coinMarketProvider := service.NewCoinMarketProvider(&service.CoinMarkerExchangeRateResponseMapper{}, apiClient, coinMarketSettings)
+	coingeckoProvider := service.NewCoingeckoProvider(&service.CoingeckoExchangeRateResponseMapper{}, apiClient, coingeckoSettings)
 
 	rateService := service.NewRateService(logger, coingeckoProvider, coinMarketProvider)
-	emailService := service.NewEmailService(*emailRepository, rateService, *apiClient, logger)
+	emailService := service.NewEmailService(*emailRepository, rateService, *apiClient, logger, senderSettings)
 
 	emailController := controller.NewEmailController(emailService)
 

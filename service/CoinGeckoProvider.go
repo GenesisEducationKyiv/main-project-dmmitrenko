@@ -1,7 +1,6 @@
 package service
 
 import (
-	constants "CurrencyRateApp/domain"
 	"CurrencyRateApp/domain/model"
 	"context"
 	"encoding/json"
@@ -20,20 +19,27 @@ type CoingeckoExchangeRateResponse struct {
 	Rates map[string]map[string]float64 `json:"rates"`
 }
 
-type CoingeckoProvider struct {
-	automapper Mapper
-	apiClient  APIClient
+type CoingeckoOptions struct {
+	Host                string `json:"Host"`
+	GetExchangeEndpoint string `json:"GetExchangeEndpoint"`
 }
 
-func NewCoingeckoProvider(automapper Mapper, apiClient APIClient) *CoingeckoProvider {
+type CoingeckoProvider struct {
+	automapper        Mapper
+	apiClient         APIClient
+	coingeckoSettings CoingeckoOptions
+}
+
+func NewCoingeckoProvider(automapper Mapper, apiClient APIClient, coingeckoSettings CoingeckoOptions) *CoingeckoProvider {
 	return &CoingeckoProvider{
-		automapper: automapper,
-		apiClient:  apiClient,
+		automapper:        automapper,
+		apiClient:         apiClient,
+		coingeckoSettings: coingeckoSettings,
 	}
 }
 
 func (r *CoingeckoProvider) FetchExchangeRate(ctx context.Context, options ExchangeRateOptions) (model.Rate, error) {
-	url := constants.API_BASE_URL + constants.SIMPLE_PRICE_ENDPOINT
+	url := r.coingeckoSettings.Host + r.coingeckoSettings.GetExchangeEndpoint
 
 	queryParams := map[string]string{
 		coinParameters:     strings.Join(options.Coins, ","),

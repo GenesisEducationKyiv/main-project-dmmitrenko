@@ -1,39 +1,50 @@
 package service
 
 import (
-	constants "CurrencyRateApp/domain"
 	"CurrencyRateApp/repository"
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
 	"github.com/sirupsen/logrus"
 )
 
-type EmailService struct {
-	EmailRepository repository.EmailRepository
-	RateService     *RateService
-	APIClient       ApiClientBase
-	Logger          *logrus.Logger
+type SenderOptions struct {
+	Nickname    string `json:"Nickname"`
+	EmailSender string `json:"EmailSender"`
+	ApiKey      string `json:"ApiKey"`
 }
 
-func NewEmailService(emailRepository repository.EmailRepository, rateService *RateService, apiClient ApiClientBase, logger *logrus.Logger) *EmailService {
+type EmailService struct {
+	emailRepository repository.EmailRepository
+	rateService     *RateService
+	apiClient       ApiClientBase
+	logger          *logrus.Logger
+	senderSettings  SenderOptions
+}
+
+func NewEmailService(
+	emailRepository repository.EmailRepository,
+	rateService *RateService,
+	apiClient ApiClientBase,
+	logger *logrus.Logger,
+	senderSettings SenderOptions) *EmailService {
 	return &EmailService{
-		EmailRepository: emailRepository,
-		RateService:     rateService,
-		APIClient:       apiClient,
-		Logger:          logger,
+		emailRepository: emailRepository,
+		rateService:     rateService,
+		apiClient:       apiClient,
+		logger:          logger,
+		senderSettings:  senderSettings,
 	}
 }
 
 func (r *EmailService) SubscribeEmail(email string) error {
-	return r.EmailRepository.AppendEmailToFile(email)
+	return r.emailRepository.AppendEmailToFile(email)
 }
 
 func (r *EmailService) SendRateForSubscribeEmails(ctx context.Context, coin string, currency string) error {
-	emails, err := r.EmailRepository.GetAllEmails()
+	emails, err := r.emailRepository.GetAllEmails()
 	if err != nil {
 		return err
 	}
@@ -44,27 +55,27 @@ func (r *EmailService) SendRateForSubscribeEmails(ctx context.Context, coin stri
 		Precision:  2,
 	}
 
-	rates, err := r.RateService.FetchExchangeRate(ctx, options)
+	rates, err := r.rateService.FetchExchangeRate(ctx, options)
 	if err != nil {
 		return err
 	}
 
 	emailsToSend := r.CreateLetters(coin, currency, fmt.Sprintf("%b", rates.Rates[""]), emails)
-	client := sendgrid.NewSendClient(os.Getenv(constants.APIKEY))
+	client := sendgrid.NewSendClient(r.senderSettings.ApiKey)
 
 	for _, emailToSend := range emailsToSend {
 		response, err := client.Send(emailToSend)
 		if err != nil {
 			return err
 		}
-		r.Logger.Log(logrus.InfoLevel, response.StatusCode)
+		r.logger.Log(logrus.InfoLevel, response.StatusCode)
 	}
 
 	return nil
 }
 
 func (r *EmailService) CreateLetters(coin string, currency string, currencyRate string, emails []string) []*mail.SGMailV3 {
-	from := mail.NewEmail(os.Getenv(constants.NICKNAME), os.Getenv(constants.EMAIL_SENDER))
+	from := mail.NewEmail(r.senderSettings.Nickname, r.senderSettings.EmailSender)
 
 	htmlContentTemplate := "<p>RATE: %s</p>"
 	plainTextContent := fmt.Sprintf("RATE: %s", currencyRate)
