@@ -1,12 +1,11 @@
 package repository_test
 
 import (
+	"CurrencyRateApp/pkg/repository"
 	"bytes"
 	"io"
 	"strings"
 	"testing"
-
-	"CurrencyRateApp/repository"
 
 	"github.com/stretchr/testify/assert"
 )

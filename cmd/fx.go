@@ -1,11 +1,10 @@
 package main
 
 import (
-	"CurrencyRateApp/api/controller"
-	_ "CurrencyRateApp/api/docs"
-	"CurrencyRateApp/api/route"
-	"CurrencyRateApp/repository"
-	"CurrencyRateApp/service"
+	"CurrencyRateApp/pkg/api"
+	"CurrencyRateApp/pkg/external"
+	"CurrencyRateApp/pkg/repository"
+	"CurrencyRateApp/pkg/service"
 	"encoding/json"
 	"io"
 	"os"
@@ -33,7 +32,7 @@ func App() *fx.App {
 			NewEmailService,
 			NewEmailController,
 			NewRateController,
-			route.SetupRouter,
+			api.SetupRouter,
 		),
 		fx.Invoke(startServer),
 	)
@@ -66,19 +65,19 @@ func NewEmailRepository(configuration Configuration) *repository.EmailRepository
 	return repository.NewEmailRepository(writeFile, file, configuration.FileSettings)
 }
 
-func NewAPIClient(logger *logrus.Logger) *service.ApiClientBase {
-	return service.NewAPIClient(logger)
+func NewAPIClient(logger *logrus.Logger) *external.ApiClientBase {
+	return external.NewAPIClient(logger)
 }
 
-func NewCoinMarketProvider(apiClient *service.ApiClientBase, coinMarketSettings service.CoinMarketOptions) *service.CoinMarketProvider {
-	return service.NewCoinMarketProvider(apiClient, coinMarketSettings)
+func NewCoinMarketProvider(apiClient *external.ApiClientBase, coinMarketSettings external.CoinMarketOptions) *external.CoinMarketProvider {
+	return external.NewCoinMarketProvider(apiClient, coinMarketSettings)
 }
 
-func NewCoingeckoProvider(apiClient *service.ApiClientBase, coingeckoSettings service.CoingeckoOptions) *service.CoingeckoProvider {
-	return service.NewCoingeckoProvider(apiClient, coingeckoSettings)
+func NewCoingeckoProvider(apiClient *external.ApiClientBase, coingeckoSettings external.CoingeckoOptions) *external.CoingeckoProvider {
+	return external.NewCoingeckoProvider(apiClient, coingeckoSettings)
 }
 
-func RateProviderSlice(coingeckoProvider *service.CoingeckoProvider, coinMarketProvider *service.CoinMarketProvider) []service.RateProvider {
+func RateProviderSlice(coingeckoProvider *external.CoingeckoProvider, coinMarketProvider *external.CoinMarketProvider) []service.RateProvider {
 	return []service.RateProvider{
 		coingeckoProvider,
 		coinMarketProvider,
@@ -89,23 +88,23 @@ func NewRateService(logger *logrus.Logger, providers []service.RateProvider) *se
 	return service.NewRateService(logger, providers...)
 }
 
-func NewEmailService(emailRepository *repository.EmailRepository, rateService *service.RateService, apiClient *service.ApiClientBase, logger *logrus.Logger, senderSettings service.SenderOptions) *service.EmailService {
+func NewEmailService(emailRepository *repository.EmailRepository, rateService *service.RateService, apiClient *external.ApiClientBase, logger *logrus.Logger, senderSettings service.SenderOptions) *service.EmailService {
 	return service.NewEmailService(*emailRepository, rateService, *apiClient, logger, senderSettings)
 }
 
-func NewEmailController(emailService *service.EmailService) *controller.EmailController {
-	return controller.NewEmailController(emailService)
+func NewEmailController(emailService *service.EmailService) *api.EmailController {
+	return api.NewEmailController(emailService)
 }
 
-func NewRateController(rateService *service.RateService) *controller.RateController {
-	return controller.NewRateController(rateService)
+func NewRateController(rateService *service.RateService) *api.RateController {
+	return api.NewRateController(rateService)
 }
 
-func NewCoinMarketSettings(configuration Configuration) service.CoinMarketOptions {
+func NewCoinMarketSettings(configuration Configuration) external.CoinMarketOptions {
 	return configuration.CoinMarketSettings
 }
 
-func NewCoingeckoSettings(configuration Configuration) service.CoingeckoOptions {
+func NewCoingeckoSettings(configuration Configuration) external.CoingeckoOptions {
 	return configuration.CoingeckoSettings
 }
 
@@ -118,7 +117,7 @@ func NewFileSettings(configuration Configuration) repository.FileOptions {
 }
 
 func NewAppSettings() Configuration {
-	configFile, err := os.Open("appsettings.json")
+	configFile, err := os.Open("../config/appsettings.json")
 	if err != nil {
 		panic(err)
 	}

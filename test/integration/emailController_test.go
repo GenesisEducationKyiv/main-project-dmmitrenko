@@ -1,9 +1,10 @@
 package integration
 
 import (
-	"CurrencyRateApp/api/controller"
-	"CurrencyRateApp/repository"
-	"CurrencyRateApp/service"
+	"CurrencyRateApp/pkg/api"
+	"CurrencyRateApp/pkg/external"
+	"CurrencyRateApp/pkg/repository"
+	"CurrencyRateApp/pkg/service"
 	"context"
 	"net/http"
 	"net/http/httptest"
@@ -55,7 +56,7 @@ func TestSubscribeEmailIntegration(t *testing.T) {
 		Path: filePath,
 	}
 
-	coinMarketSettings := service.CoinMarketOptions{
+	coinMarketSettings := external.CoinMarketOptions{
 		ApiKey:              "8f5685ff-4148-40ad-8d88-21d3e5b8d068",
 		Host:                "https://pro-api.coinmarketcap.com/",
 		GetExchangeEndpoint: "v1/cryptocurrency/quotes/latest",
@@ -67,7 +68,7 @@ func TestSubscribeEmailIntegration(t *testing.T) {
 		ApiKey:      "APIKEY",
 	}
 
-	coingeckoSettings := service.CoingeckoOptions{
+	coingeckoSettings := external.CoingeckoOptions{
 		Host:                "https://api.coingecko.com/",
 		GetExchangeEndpoint: "api/v3/simple/price",
 	}
@@ -83,14 +84,14 @@ func TestSubscribeEmailIntegration(t *testing.T) {
 
 	logger := logrus.New()
 	emailRepository := repository.NewEmailRepository(writer, reader, fileSettings)
-	apiClient := service.NewAPIClient(logger)
-	coinMarketProvider := service.NewCoinMarketProvider(apiClient, coinMarketSettings)
-	coingeckoProvider := service.NewCoingeckoProvider(apiClient, coingeckoSettings)
+	apiClient := external.NewAPIClient(logger)
+	coinMarketProvider := external.NewCoinMarketProvider(apiClient, coinMarketSettings)
+	coingeckoProvider := external.NewCoingeckoProvider(apiClient, coingeckoSettings)
 
 	rateService := service.NewRateService(logger, coingeckoProvider, coinMarketProvider)
 	emailService := service.NewEmailService(*emailRepository, rateService, *apiClient, logger, senderSettings)
 
-	emailController := controller.NewEmailController(emailService)
+	emailController := api.NewEmailController(emailService)
 
 	router.POST("/email", emailController.SubscribeEmail)
 
@@ -134,7 +135,7 @@ func TestSendEmailsIntegration(t *testing.T) {
 	mockEmailService := &MockEmailService{}
 	mockEmailService.On("SendRateForSubscribeEmails").Return(nil)
 
-	emailController := controller.NewEmailController(mockEmailService)
+	emailController := api.NewEmailController(mockEmailService)
 
 	router.POST("/subscribe", emailController.SendEmails)
 

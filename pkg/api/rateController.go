@@ -1,9 +1,9 @@
-package controller
+package api
 
 import (
-	constants "CurrencyRateApp/domain"
-	"CurrencyRateApp/domain/model"
-	"CurrencyRateApp/service"
+	"CurrencyRateApp/internal/helper"
+	"CurrencyRateApp/pkg/external"
+	"CurrencyRateApp/pkg/service"
 	"net/http"
 	"strconv"
 	"strings"
@@ -30,11 +30,11 @@ func NewRateController(rateService service.RateProvider) *RateController {
 // @Success 200 {number} decimal
 // @Router /exchange-rate [get]
 func (r *RateController) GetBitcoinToUahExchangeRate(c *gin.Context) {
-	coins := []string{constants.BITCOIN}
-	currencies := []string{constants.UAH}
+	coins := []string{helper.BITCOIN}
+	currencies := []string{helper.UAH}
 	precision := 2
 
-	var options = service.ExchangeRateOptions{
+	var options = external.ExchangeRateOptions{
 		Coins:      coins,
 		Currencies: currencies,
 		Precision:  uint(precision),
@@ -67,7 +67,7 @@ func (r *RateController) GetCoinExchangeRate(c *gin.Context) {
 	currencies := c.PostForm("currencies")
 	precisionStr := c.PostForm("precision")
 
-	availableCoins := model.GetAvailableCoins()
+	availableCoins := helper.GetAvailableCoins()
 
 	if !validateInput(coins, availableCoins) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid coins selected."})
@@ -80,7 +80,7 @@ func (r *RateController) GetCoinExchangeRate(c *gin.Context) {
 		return
 	}
 
-	var options = service.ExchangeRateOptions{
+	var options = external.ExchangeRateOptions{
 		Coins:      strings.Split(coins, ","),
 		Currencies: strings.Split(currencies, ","),
 		Precision:  uint(precision),

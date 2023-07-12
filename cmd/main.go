@@ -1,17 +1,17 @@
 package main
 
 import (
-	_ "CurrencyRateApp/api/docs"
-	"CurrencyRateApp/repository"
-	"CurrencyRateApp/service"
+	"CurrencyRateApp/pkg/external"
+	"CurrencyRateApp/pkg/repository"
+	"CurrencyRateApp/pkg/service"
 	"context"
 )
 
 type Configuration struct {
-	CoinMarketSettings service.CoinMarketOptions `json:"CoinMarketOptions"`
-	CoingeckoSettings  service.CoingeckoOptions  `json:"CoingeckoOptions"`
-	SenderSettings     service.SenderOptions     `json:"SenderOptions"`
-	FileSettings       repository.FileOptions    `json:"FileOptions"`
+	CoinMarketSettings external.CoinMarketOptions `json:"CoinMarketOptions"`
+	CoingeckoSettings  external.CoingeckoOptions  `json:"CoingeckoOptions"`
+	SenderSettings     service.SenderOptions      `json:"SenderOptions"`
+	FileSettings       repository.FileOptions     `json:"FileOptions"`
 }
 
 func main() {

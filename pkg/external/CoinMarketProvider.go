@@ -1,11 +1,18 @@
-package service
+package external
 
 import (
-	"CurrencyRateApp/domain/model"
+	"CurrencyRateApp/internal/helper"
+	"CurrencyRateApp/internal/model"
 	"context"
 	"encoding/json"
 	"strings"
 )
+
+type ExchangeRateOptions struct {
+	Coins      []string
+	Currencies []string
+	Precision  uint
+}
 
 type CoinMarketOptions struct {
 	ApiKey              string `json:"ApiKey"`
@@ -40,7 +47,7 @@ func (r *CoinMarketProvider) FetchExchangeRate(ctx context.Context, options Exch
 
 	normalizedCoins := make([]string, len(options.Coins))
 	for i, coin := range options.Coins {
-		normalizedCoins[i] = model.NormalizeCurrency(strings.ToLower(coin))
+		normalizedCoins[i] = helper.NormalizeCurrency(strings.ToLower(coin))
 	}
 
 	headers := map[string]string{

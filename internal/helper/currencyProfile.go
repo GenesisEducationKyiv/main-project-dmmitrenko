@@ -1,4 +1,4 @@
-package model
+package helper
 
 var currencyMapping = map[string]string{
 	"bitcoin":  "BTC",

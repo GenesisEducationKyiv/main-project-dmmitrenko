@@ -1,8 +1,7 @@
-package route
+package api
 
 import (
-	"CurrencyRateApp/api/controller"
-	"CurrencyRateApp/api/middleware"
+	"CurrencyRateApp/pkg/middleware"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -10,7 +9,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-func SetupRouter(emailController *controller.EmailController, rateController *controller.RateController, logger *logrus.Logger) *gin.Engine {
+func SetupRouter(emailController *EmailController, rateController *RateController, logger *logrus.Logger) *gin.Engine {
 	router := gin.Default()
 	router.Use(middleware.ExceptionMiddleware(logger))
 

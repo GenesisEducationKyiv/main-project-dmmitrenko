@@ -1,7 +1,8 @@
 package service
 
 import (
-	"CurrencyRateApp/domain/model"
+	"CurrencyRateApp/internal/model"
+	"CurrencyRateApp/pkg/external"
 	"context"
 	"fmt"
 
@@ -13,14 +14,8 @@ type RateService struct {
 	Logger    *logrus.Logger
 }
 
-type ExchangeRateOptions struct {
-	Coins      []string
-	Currencies []string
-	Precision  uint
-}
-
 type RateProvider interface {
-	FetchExchangeRate(ctx context.Context, options ExchangeRateOptions) (model.Rate, error)
+	FetchExchangeRate(ctx context.Context, options external.ExchangeRateOptions) (model.Rate, error)
 }
 
 func NewRateService(logger *logrus.Logger, providers ...RateProvider) *RateService {
@@ -30,7 +25,7 @@ func NewRateService(logger *logrus.Logger, providers ...RateProvider) *RateServi
 	}
 }
 
-func (s *RateService) FetchExchangeRate(ctx context.Context, options ExchangeRateOptions) (model.Rate, error) {
+func (s *RateService) FetchExchangeRate(ctx context.Context, options external.ExchangeRateOptions) (model.Rate, error) {
 	var rate model.Rate
 	var err error
 
